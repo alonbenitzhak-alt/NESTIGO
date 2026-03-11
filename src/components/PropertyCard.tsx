@@ -1,7 +1,13 @@
+"use client";
+
 import Link from "next/link";
 import { Property } from "@/lib/types";
+import { useFavorites } from "@/lib/FavoritesContext";
 
 export default function PropertyCard({ property }: { property: Property }) {
+  const { isFavorite, toggleFavorite } = useFavorites();
+  const favorited = isFavorite(property.id);
+
   return (
     <div className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 group">
       <div className="relative h-56 overflow-hidden">
@@ -16,6 +22,20 @@ export default function PropertyCard({ property }: { property: Property }) {
         <div className="absolute top-3 right-3 bg-accent-500 text-white text-xs font-bold px-3 py-1 rounded-full">
           {property.expected_roi}% ROI
         </div>
+        <button
+          onClick={() => toggleFavorite(property.id)}
+          className="absolute bottom-3 right-3 w-9 h-9 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-white transition-colors"
+          aria-label={favorited ? "Remove from favorites" : "Add to favorites"}
+        >
+          <svg
+            className={`w-5 h-5 ${favorited ? "text-red-500 fill-red-500" : "text-gray-400"}`}
+            fill={favorited ? "currentColor" : "none"}
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+          </svg>
+        </button>
       </div>
 
       <div className="p-5">
@@ -44,7 +64,7 @@ export default function PropertyCard({ property }: { property: Property }) {
           href={`/properties/${property.id}`}
           className="block text-center bg-primary-600 text-white py-2.5 rounded-xl font-semibold text-sm hover:bg-primary-700 transition-colors"
         >
-          View Details
+          Request Investment Package
         </Link>
       </div>
     </div>

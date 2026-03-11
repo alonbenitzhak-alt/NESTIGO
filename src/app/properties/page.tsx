@@ -13,6 +13,7 @@ function PropertiesContent() {
     priceRange: searchParams.get("budget") || "",
     propertyType: "",
     minRoi: "",
+    minBedrooms: "",
   });
 
   const filtered = useMemo(() => {
@@ -27,6 +28,10 @@ function PropertiesContent() {
         const min = parseFloat(filters.minRoi);
         if (p.expected_roi < min) return false;
       }
+      if (filters.minBedrooms) {
+        const min = parseInt(filters.minBedrooms);
+        if (p.bedrooms < min) return false;
+      }
       return true;
     });
   }, [filters]);
@@ -36,7 +41,7 @@ function PropertiesContent() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
       {/* Filters */}
-      <div className="bg-white rounded-2xl border border-gray-200 p-6 mb-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+      <div className="bg-white rounded-2xl border border-gray-200 p-6 mb-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4">
         <div>
           <label className="block text-xs font-semibold text-gray-500 mb-1">Country</label>
           <select
@@ -96,9 +101,24 @@ function PropertiesContent() {
           </select>
         </div>
 
+        <div>
+          <label className="block text-xs font-semibold text-gray-500 mb-1">Bedrooms</label>
+          <select
+            value={filters.minBedrooms}
+            onChange={(e) => setFilters({ ...filters, minBedrooms: e.target.value })}
+            className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-primary-500 outline-none bg-white"
+          >
+            <option value="">Any</option>
+            <option value="1">1+</option>
+            <option value="2">2+</option>
+            <option value="3">3+</option>
+            <option value="4">4+</option>
+          </select>
+        </div>
+
         <div className="flex items-end">
           <button
-            onClick={() => setFilters({ country: "", priceRange: "", propertyType: "", minRoi: "" })}
+            onClick={() => setFilters({ country: "", priceRange: "", propertyType: "", minRoi: "", minBedrooms: "" })}
             className="w-full text-sm text-primary-600 font-semibold border border-primary-200 rounded-lg py-2.5 hover:bg-primary-50 transition-colors"
           >
             Clear Filters

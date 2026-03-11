@@ -1,14 +1,38 @@
 "use client";
 
 import { useState } from "react";
+import { supabase } from "@/lib/supabase";
 
 export default function ContactPage() {
-  const [form, setForm] = useState({ name: "", email: "", phone: "", message: "" });
-  const [submitted, setSubmitted] = useState(false);
+  const [form, setForm] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    investment_budget: "",
+    message: "",
+  });
+  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitted(true);
+    setStatus("loading");
+
+    try {
+      const { error } = await supabase.from("leads").insert({
+        property_id: null,
+        name: form.name,
+        email: form.email,
+        phone: form.phone,
+        investment_budget: form.investment_budget,
+        message: form.message,
+      });
+
+      if (error) throw error;
+      setStatus("success");
+      setForm({ name: "", email: "", phone: "", investment_budget: "", message: "" });
+    } catch {
+      setStatus("error");
+    }
   };
 
   return (
@@ -79,7 +103,7 @@ export default function ContactPage() {
 
           {/* Contact Form */}
           <div className="bg-white rounded-2xl border border-gray-200 p-6 md:p-8">
-            {submitted ? (
+            {status === "success" ? (
               <div className="text-center py-8">
                 <div className="w-14 h-14 bg-accent-500 rounded-full flex items-center justify-center mx-auto mb-4">
                   <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -126,6 +150,21 @@ export default function ContactPage() {
                   />
                 </div>
                 <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Investment Budget</label>
+                  <select
+                    required
+                    value={form.investment_budget}
+                    onChange={(e) => setForm({ ...form, investment_budget: e.target.value })}
+                    className="w-full px-4 py-2.5 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none bg-white"
+                  >
+                    <option value="">Select your budget</option>
+                    <option value="50000-100000">€50,000 - €100,000</option>
+                    <option value="100000-250000">€100,000 - €250,000</option>
+                    <option value="250000-500000">€250,000 - €500,000</option>
+                    <option value="500000+">€500,000+</option>
+                  </select>
+                </div>
+                <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Message</label>
                   <textarea
                     rows={4}
@@ -138,10 +177,15 @@ export default function ContactPage() {
                 </div>
                 <button
                   type="submit"
-                  className="w-full bg-primary-600 text-white py-3 rounded-xl font-semibold text-sm hover:bg-primary-700 transition-colors"
+                  disabled={status === "loading"}
+                  className="w-full bg-primary-600 text-white py-3 rounded-xl font-semibold text-sm hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Send Message
+                  {status === "loading" ? "Sending..." : "Send Message"}
                 </button>
+
+                {status === "error" && (
+                  <p className="text-red-500 text-sm text-center">Something went wrong. Please try again.</p>
+                )}
               </form>
             )}
           </div>
