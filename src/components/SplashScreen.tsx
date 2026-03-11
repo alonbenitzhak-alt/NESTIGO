@@ -33,25 +33,22 @@ export default function SplashScreen({ onFinish }: { onFinish: () => void }) {
         }}
       >
         <img
-          src="/logo.jpg"
+          src="/logo.png"
           alt="NESTIGO"
-          className="w-48 h-48 sm:w-64 sm:h-64 object-contain drop-shadow-2xl"
+          className="w-64 h-64 sm:w-80 sm:h-80 object-contain drop-shadow-2xl"
         />
       </div>
 
-      {/* Slogan */}
+      {/* Hebrew Tagline */}
       <div
-        className={`mt-8 text-center transition-all duration-1000 ease-out ${
+        className={`mt-6 text-center transition-all duration-1000 ease-out ${
           phase === "slogan" || phase === "fadeOut"
             ? "opacity-100 translate-y-0"
             : "opacity-0 translate-y-6"
         }`}
       >
-        <p className="text-2xl sm:text-3xl font-bold text-gray-800 tracking-wide">
-          הדרך שלך להשקעות בעולם
-        </p>
-        <p className="mt-3 text-base sm:text-lg text-gray-400 font-light">
-          Your Gateway to Global Real Estate
+        <p className="text-3xl sm:text-4xl font-bold text-gray-800 tracking-wide" dir="rtl">
+          הבית הישראלי לנדל&quot;ן בחו&quot;ל
         </p>
       </div>
 

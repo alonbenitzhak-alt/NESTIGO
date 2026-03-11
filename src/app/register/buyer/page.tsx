@@ -95,7 +95,7 @@ export default function BuyerRegisterPage() {
         <div className="w-full max-w-md">
           <div className="text-center mb-8">
             <Link href="/" className="inline-block mb-6">
-              <img src="/logo.jpg" alt="NESTIGO" className="h-16 w-auto mx-auto" />
+              <img src="/logo.png" alt="NESTIGO" className="h-16 w-auto mx-auto" />
             </Link>
             <h2 className="text-2xl font-bold text-gray-900">
               {mode === "register"
