@@ -28,11 +28,6 @@ export default function SplashScreen({ onFinish }: { onFinish: () => void }) {
     >
       {/* Logo */}
       <div
-        className={`transition-all duration-1000 ease-out ${
-          phase === "logo"
-            ? "scale-90 opacity-0"
-            : "scale-100 opacity-100"
-        }`}
         style={{
           animation: "logoEntry 0.8s ease-out forwards",
         }}
