@@ -10,15 +10,19 @@ import LoginForm from "./LoginForm";
 export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
-  const { user, signOut, isAdmin } = useAuth();
+  const { user, signOut, isAdmin, isAgent } = useAuth();
   const { favorites } = useFavorites();
   const { lang, setLang, t } = useLanguage();
+
+  const dashboardHref = isAgent ? "/dashboard/agent" : "/dashboard/buyer";
 
   const links = [
     { href: "/", label: t("nav.home") },
     { href: "/properties", label: t("nav.properties") },
     { href: "/countries", label: t("nav.countries") },
-    { href: "/how-it-works", label: t("nav.howItWorks") },
+    { href: "/calculator", label: t("nav.calculator") },
+    { href: "/blog", label: t("nav.blog") },
+    { href: "/about", label: t("nav.about") },
     { href: "/contact", label: t("nav.contact") },
   ];
 
@@ -31,7 +35,7 @@ export default function Navbar() {
               <img src="/logo.jpg" alt="ISRAVEST" className="h-20 w-auto" loading="eager" />
             </Link>
 
-            <div className="hidden md:flex items-center gap-5">
+            <div className="hidden md:flex items-center gap-4">
               {links.map((link) => (
                 <Link
                   key={link.href}
@@ -42,6 +46,19 @@ export default function Navbar() {
                 </Link>
               ))}
 
+              {/* Compare */}
+              <Link
+                href="/compare"
+                className="text-gray-600 hover:text-primary-600 transition-colors"
+                aria-label={t("nav.compare")}
+                title={t("nav.compare")}
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7" />
+                </svg>
+              </Link>
+
+              {/* Favorites */}
               <Link
                 href="/favorites"
                 className="relative text-gray-600 hover:text-primary-600 transition-colors"
@@ -75,6 +92,12 @@ export default function Navbar() {
                       {t("nav.admin")}
                     </Link>
                   )}
+                  <Link
+                    href={dashboardHref}
+                    className="text-sm font-medium text-primary-600 hover:text-primary-700 transition-colors"
+                  >
+                    {t("nav.dashboard")}
+                  </Link>
                   <button
                     onClick={() => signOut()}
                     className="text-sm font-medium text-gray-500 hover:text-red-500 transition-colors"
@@ -128,6 +151,13 @@ export default function Navbar() {
               </Link>
             ))}
             <Link
+              href="/compare"
+              className="block text-base font-medium text-gray-700 hover:text-primary-600 hover:bg-gray-50 rounded-lg px-3 py-3"
+              onClick={() => setMobileOpen(false)}
+            >
+              {t("nav.compare")}
+            </Link>
+            <Link
               href="/favorites"
               className="block text-base font-medium text-gray-700 hover:text-primary-600 hover:bg-gray-50 rounded-lg px-3 py-3"
               onClick={() => setMobileOpen(false)}
@@ -142,6 +172,13 @@ export default function Navbar() {
             </button>
             {user ? (
               <>
+                <Link
+                  href={dashboardHref}
+                  className="block text-base font-medium text-primary-600 hover:bg-primary-50 rounded-lg px-3 py-3"
+                  onClick={() => setMobileOpen(false)}
+                >
+                  {t("nav.dashboard")}
+                </Link>
                 {isAdmin && (
                   <Link
                     href="/admin"
