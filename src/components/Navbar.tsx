@@ -106,12 +106,18 @@ export default function Navbar() {
                   </button>
                 </div>
               ) : (
-                <button
-                  onClick={() => setShowLogin(true)}
-                  className="text-sm font-medium text-gray-600 hover:text-primary-600 transition-colors"
-                >
-                  {t("nav.signIn")}
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setShowLogin(true)}
+                    className="text-sm font-medium text-gray-600 hover:text-primary-600 transition-colors"
+                  >
+                    {t("nav.signIn")}
+                  </button>
+                  <span className="text-gray-300">|</span>
+                  <Link href="/register/buyer" className="text-sm font-medium text-gray-600 hover:text-primary-600 transition-colors">
+                    {lang === "he" ? "הרשמה" : "Register"}
+                  </Link>
+                </div>
               )}
 
               <Link
@@ -196,12 +202,28 @@ export default function Navbar() {
                 </button>
               </>
             ) : (
-              <button
-                onClick={() => { setShowLogin(true); setMobileOpen(false); }}
-                className="block w-full text-start text-base font-medium text-primary-600 hover:bg-primary-50 rounded-lg px-3 py-3"
-              >
-                {t("nav.signIn")}
-              </button>
+              <>
+                <button
+                  onClick={() => { setShowLogin(true); setMobileOpen(false); }}
+                  className="block w-full text-start text-base font-medium text-primary-600 hover:bg-primary-50 rounded-lg px-3 py-3"
+                >
+                  {t("nav.signIn")}
+                </button>
+                <Link
+                  href="/register/buyer"
+                  className="block text-base font-medium text-gray-700 hover:text-primary-600 hover:bg-gray-50 rounded-lg px-3 py-3"
+                  onClick={() => setMobileOpen(false)}
+                >
+                  {lang === "he" ? "הרשמה כמשקיע" : "Register as Investor"}
+                </Link>
+                <Link
+                  href="/register/agent"
+                  className="block text-base font-medium text-gray-700 hover:text-primary-600 hover:bg-gray-50 rounded-lg px-3 py-3"
+                  onClick={() => setMobileOpen(false)}
+                >
+                  {lang === "he" ? "הרשמה כסוכן" : "Register as Agent"}
+                </Link>
+              </>
             )}
             <div className="pt-2">
               <Link
