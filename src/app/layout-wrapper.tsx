@@ -1,15 +1,28 @@
 "use client";
 
 import { useLanguage } from "@/lib/LanguageContext";
-import { useEffect, ReactNode } from "react";
+import { useEffect, useState, useCallback, ReactNode } from "react";
+import SplashScreen from "@/components/SplashScreen";
 
 export function LayoutWrapper({ children }: { children: ReactNode }) {
   const { lang, dir } = useLanguage();
+  const [showSplash, setShowSplash] = useState(true);
 
   useEffect(() => {
     document.documentElement.lang = lang;
     document.documentElement.dir = dir;
   }, [lang, dir]);
 
-  return <>{children}</>;
+  const handleSplashFinish = useCallback(() => {
+    setShowSplash(false);
+  }, []);
+
+  return (
+    <>
+      {showSplash && <SplashScreen onFinish={handleSplashFinish} />}
+      <div className={showSplash ? "opacity-0" : "opacity-100 transition-opacity duration-500"}>
+        {children}
+      </div>
+    </>
+  );
 }
