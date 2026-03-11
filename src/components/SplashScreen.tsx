@@ -66,22 +66,6 @@ export default function SplashScreen({ onFinish }: { onFinish: () => void }) {
         <span className="w-2 h-2 bg-primary-500 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
       </div>
 
-      <style jsx>{`
-        @keyframes logoEntry {
-          0% {
-            opacity: 0;
-            transform: scale(0.7);
-          }
-          60% {
-            opacity: 1;
-            transform: scale(1.05);
-          }
-          100% {
-            opacity: 1;
-            transform: scale(1);
-          }
-        }
-      `}</style>
     </div>
   );
 }
