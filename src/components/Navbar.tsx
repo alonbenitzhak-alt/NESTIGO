@@ -26,9 +26,9 @@ export default function Navbar() {
     <>
       <nav className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
+          <div className="flex items-center justify-between h-20">
             <Link href="/" className="flex flex-col items-center">
-              <img src="/logo.jpg" alt="ISRAVEST" className="h-12 w-auto" loading="eager" />
+              <img src="/logo.jpg" alt="ISRAVEST" className="h-24 w-auto" loading="eager" />
               <span className="text-[9px] text-gray-500 leading-tight -mt-0.5">
                 {lang === "he" ? "הדרך שלך להשקעות בעולם" : "Your Path to Global Investments"}
               </span>
