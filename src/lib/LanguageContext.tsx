@@ -359,6 +359,17 @@ const translations: Record<Lang, Record<string, string>> = {
     "countries.notFound": "מדינה לא נמצאה",
     "countries.backToCountries": "חזרה למדינות",
 
+    // Chat
+    "chat.sendMessage": "שלח הודעה",
+    "chat.placeholder": "כתבו הודעה...",
+    "chat.noMessages": "אין הודעות עדיין. שלחו הודעה ראשונה!",
+    "chat.loginRequired": "יש להתחבר כדי לשלוח הודעה",
+    "chat.agentSubtitle": "סוכן השקעות",
+    "chat.backToChats": "חזרה לצ'אטים",
+    "chat.noChats": "אין צ'אטים עדיין",
+    "chat.noChatsSub": "כאשר לקוחות ישלחו הודעות, הם יופיעו כאן",
+    "dashboard.agent.chats": "צ'אטים",
+
     // Footer
     "footer.description": "NESTIGO מחברת משקיעים ישראלים עם הזדמנויות נדל\"ן בינלאומיות פרימיום. חקרו נכסים נבחרים בשווקים גלובליים מובילים עם תמחור שקוף וליווי מומחים.",
     "footer.quickLinks": "קישורים מהירים",
@@ -719,6 +730,17 @@ const translations: Record<Lang, Record<string, string>> = {
     "countries.checkBack": "Check back soon for new listings.",
     "countries.notFound": "Country not found",
     "countries.backToCountries": "Back to Countries",
+
+    // Chat
+    "chat.sendMessage": "Send Message",
+    "chat.placeholder": "Type a message...",
+    "chat.noMessages": "No messages yet. Send the first message!",
+    "chat.loginRequired": "Please sign in to send a message",
+    "chat.agentSubtitle": "Investment Agent",
+    "chat.backToChats": "Back to Chats",
+    "chat.noChats": "No chats yet",
+    "chat.noChatsSub": "When clients send messages, they will appear here",
+    "dashboard.agent.chats": "Chats",
 
     // Footer
     "footer.description": "NESTIGO connects Israeli investors with premium international real estate opportunities. Explore curated properties in top global markets with transparent pricing and expert guidance.",

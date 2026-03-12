@@ -94,6 +94,26 @@ CREATE TABLE IF NOT EXISTS blog_posts (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- Conversations table (chat threads between buyers and agents on a property)
+CREATE TABLE IF NOT EXISTS conversations (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  property_id UUID REFERENCES properties(id) ON DELETE CASCADE NOT NULL,
+  buyer_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
+  agent_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(property_id, buyer_id, agent_id)
+);
+
+-- Messages table
+CREATE TABLE IF NOT EXISTS messages (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  conversation_id UUID REFERENCES conversations(id) ON DELETE CASCADE NOT NULL,
+  sender_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
+  content TEXT NOT NULL,
+  read BOOLEAN DEFAULT false,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
 -- Enable Row Level Security
 ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE properties ENABLE ROW LEVEL SECURITY;
@@ -140,6 +160,26 @@ CREATE POLICY "Admin can manage blog posts" ON blog_posts FOR ALL USING (
   EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin')
 );
 
+-- Conversations policies
+ALTER TABLE conversations ENABLE ROW LEVEL SECURITY;
+ALTER TABLE messages ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can view own conversations" ON conversations FOR SELECT USING (
+  buyer_id = auth.uid() OR agent_id = auth.uid()
+);
+CREATE POLICY "Authenticated users can create conversations" ON conversations FOR INSERT WITH CHECK (
+  buyer_id = auth.uid()
+);
+CREATE POLICY "Users can view messages in own conversations" ON messages FOR SELECT USING (
+  EXISTS (SELECT 1 FROM conversations WHERE conversations.id = messages.conversation_id AND (conversations.buyer_id = auth.uid() OR conversations.agent_id = auth.uid()))
+);
+CREATE POLICY "Users can send messages in own conversations" ON messages FOR INSERT WITH CHECK (
+  sender_id = auth.uid() AND EXISTS (SELECT 1 FROM conversations WHERE conversations.id = messages.conversation_id AND (conversations.buyer_id = auth.uid() OR conversations.agent_id = auth.uid()))
+);
+CREATE POLICY "Recipients can mark messages as read" ON messages FOR UPDATE USING (
+  EXISTS (SELECT 1 FROM conversations WHERE conversations.id = messages.conversation_id AND (conversations.buyer_id = auth.uid() OR conversations.agent_id = auth.uid()))
+);
+
 -- Indexes
 CREATE INDEX IF NOT EXISTS idx_properties_country ON properties(country);
 CREATE INDEX IF NOT EXISTS idx_properties_type ON properties(property_type);
@@ -151,3 +191,7 @@ CREATE INDEX IF NOT EXISTS idx_leads_status ON leads(status);
 CREATE INDEX IF NOT EXISTS idx_favorites_user_id ON favorites(user_id);
 CREATE INDEX IF NOT EXISTS idx_blog_posts_slug ON blog_posts(slug);
 CREATE INDEX IF NOT EXISTS idx_blog_posts_published ON blog_posts(published);
+CREATE INDEX IF NOT EXISTS idx_conversations_buyer_id ON conversations(buyer_id);
+CREATE INDEX IF NOT EXISTS idx_conversations_agent_id ON conversations(agent_id);
+CREATE INDEX IF NOT EXISTS idx_messages_conversation_id ON messages(conversation_id);
+CREATE INDEX IF NOT EXISTS idx_messages_created_at ON messages(created_at);

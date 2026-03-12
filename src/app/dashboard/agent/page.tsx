@@ -4,11 +4,21 @@ import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "@/lib/AuthContext";
 import { useLanguage } from "@/lib/LanguageContext";
 import { supabase } from "@/lib/supabase";
-import { Property, Lead, LeadStatus } from "@/lib/types";
+import { Property, Lead, LeadStatus, Conversation, Message } from "@/lib/types";
 import LoginForm from "@/components/LoginForm";
+import ChatWindow from "@/components/ChatWindow";
 import Link from "next/link";
 
-type Tab = "properties" | "leads" | "stats" | "profile";
+type Tab = "properties" | "leads" | "chats" | "stats" | "profile";
+
+interface ConversationWithDetails extends Conversation {
+  buyer_name: string;
+  buyer_email: string;
+  property_title: string;
+  last_message?: string;
+  last_message_at?: string;
+  unread_count: number;
+}
 
 const statusColors: Record<LeadStatus, string> = {
   sent: "bg-blue-100 text-blue-700",
@@ -146,6 +156,9 @@ export default function AgentDashboard() {
   const [leadsLoading, setLeadsLoading] = useState(true);
   const [editing, setEditing] = useState<Property | null>(null);
   const [showForm, setShowForm] = useState(false);
+  const [conversations, setConversations] = useState<ConversationWithDetails[]>([]);
+  const [chatsLoading, setChatsLoading] = useState(true);
+  const [activeChat, setActiveChat] = useState<ConversationWithDetails | null>(null);
 
   // Profile form
   const [agentName, setAgentName] = useState("");
@@ -185,6 +198,69 @@ export default function AgentDashboard() {
         .order("created_at", { ascending: false });
       if (leadsData) setLeads(leadsData);
       setLeadsLoading(false);
+
+      // Fetch conversations with buyer info
+      const { data: convos } = await supabase
+        .from("conversations")
+        .select("*")
+        .eq("agent_id", user.id)
+        .order("created_at", { ascending: false });
+
+      if (convos && convos.length > 0) {
+        const buyerIds = [...new Set(convos.map((c: Conversation) => c.buyer_id))];
+        const propertyIds = [...new Set(convos.map((c: Conversation) => c.property_id))];
+
+        const { data: buyerProfiles } = await supabase
+          .from("profiles")
+          .select("id, full_name, email")
+          .in("id", buyerIds);
+
+        const { data: convProps } = await supabase
+          .from("properties")
+          .select("id, title")
+          .in("id", propertyIds);
+
+        const enriched: ConversationWithDetails[] = [];
+        for (const conv of convos) {
+          const buyer = buyerProfiles?.find((p: { id: string }) => p.id === conv.buyer_id);
+          const prop = convProps?.find((p: { id: string }) => p.id === conv.property_id);
+
+          // Get last message
+          const { data: lastMsg } = await supabase
+            .from("messages")
+            .select("content, created_at")
+            .eq("conversation_id", conv.id)
+            .order("created_at", { ascending: false })
+            .limit(1)
+            .single();
+
+          // Get unread count
+          const { count } = await supabase
+            .from("messages")
+            .select("id", { count: "exact", head: true })
+            .eq("conversation_id", conv.id)
+            .neq("sender_id", user.id)
+            .eq("read", false);
+
+          enriched.push({
+            ...conv,
+            buyer_name: buyer?.full_name || buyer?.email || "Unknown",
+            buyer_email: buyer?.email || "",
+            property_title: prop?.title || "",
+            last_message: lastMsg?.content,
+            last_message_at: lastMsg?.created_at,
+            unread_count: count || 0,
+          });
+        }
+        // Sort by last message time
+        enriched.sort((a, b) => {
+          const aTime = a.last_message_at || a.created_at;
+          const bTime = b.last_message_at || b.created_at;
+          return new Date(bTime).getTime() - new Date(aTime).getTime();
+        });
+        setConversations(enriched);
+      }
+      setChatsLoading(false);
     };
     fetchData();
   }, [user]);
@@ -311,6 +387,7 @@ export default function AgentDashboard() {
   const tabs = [
     { key: "properties" as Tab, label: t("dashboard.agent.myProperties"), icon: "M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" },
     { key: "leads" as Tab, label: t("dashboard.agent.leads"), icon: "M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" },
+    { key: "chats" as Tab, label: t("dashboard.agent.chats"), icon: "M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z", badge: conversations.reduce((sum, c) => sum + c.unread_count, 0) },
     { key: "stats" as Tab, label: t("dashboard.agent.statistics"), icon: "M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" },
     { key: "profile" as Tab, label: t("dashboard.agent.myProfile"), icon: "M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" },
   ];
@@ -360,6 +437,9 @@ export default function AgentDashboard() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={tab.icon} />
               </svg>
               {tab.label}
+              {"badge" in tab && typeof tab.badge === "number" && tab.badge > 0 && (
+                <span className="bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center">{tab.badge}</span>
+              )}
             </button>
           ))}
         </div>
@@ -503,6 +583,79 @@ export default function AgentDashboard() {
                       </div>
                     </div>
                   </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Chats Tab */}
+        {activeTab === "chats" && (
+          <div>
+            {activeChat ? (
+              <div>
+                <button
+                  onClick={() => setActiveChat(null)}
+                  className="mb-4 text-sm font-medium text-primary-600 hover:text-primary-700 inline-flex items-center gap-1"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
+                  {t("chat.backToChats")}
+                </button>
+                <div className="text-sm text-gray-500 mb-3">
+                  {t("dashboard.agent.property")}: <span className="font-medium text-gray-700">{activeChat.property_title}</span>
+                </div>
+                <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden h-[500px]">
+                  <ChatWindow
+                    conversationId={activeChat.id}
+                    otherName={activeChat.buyer_name}
+                  />
+                </div>
+              </div>
+            ) : chatsLoading ? (
+              <div className="text-center py-16 text-gray-400">{t("properties.loading")}</div>
+            ) : conversations.length === 0 ? (
+              <div className="text-center py-20 text-gray-400">
+                <svg className="w-16 h-16 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                </svg>
+                <p className="text-lg mb-2">{t("chat.noChats")}</p>
+                <p className="text-sm">{t("chat.noChatsSub")}</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {conversations.map((conv) => (
+                  <button
+                    key={conv.id}
+                    onClick={() => setActiveChat(conv)}
+                    className="w-full bg-white rounded-2xl border border-gray-200 p-5 hover:border-primary-300 hover:shadow-sm transition-all text-start"
+                  >
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex items-center gap-3 flex-1 min-w-0">
+                        <div className="w-11 h-11 bg-primary-100 text-primary-600 rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0">
+                          {conv.buyer_name.charAt(0)}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <h3 className="font-semibold text-gray-900 text-sm">{conv.buyer_name}</h3>
+                            {conv.unread_count > 0 && (
+                              <span className="bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">{conv.unread_count}</span>
+                            )}
+                          </div>
+                          <p className="text-xs text-gray-500 truncate">{conv.property_title}</p>
+                          {conv.last_message && (
+                            <p className="text-sm text-gray-600 truncate mt-1">{conv.last_message}</p>
+                          )}
+                        </div>
+                      </div>
+                      {conv.last_message_at && (
+                        <span className="text-xs text-gray-400 flex-shrink-0">
+                          {new Date(conv.last_message_at).toLocaleDateString(lang === "he" ? "he-IL" : "en-US")}
+                        </span>
+                      )}
+                    </div>
+                  </button>
                 ))}
               </div>
             )}
