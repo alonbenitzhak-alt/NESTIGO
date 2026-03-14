@@ -3,44 +3,6 @@
 import { useLanguage } from "@/lib/LanguageContext";
 import Link from "next/link";
 
-const team = [
-  {
-    name: { he: "אלון בן יצחק", en: "Alon Ben Yitzhak" },
-    role: { he: "מייסד ומנכ\"ל", en: "Founder & CEO" },
-    image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=300&h=300&fit=crop&crop=face",
-    bio: {
-      he: "מעל 15 שנות ניסיון בנדל\"ן בינלאומי ושוקי השקעות באירופה.",
-      en: "Over 15 years of experience in international real estate and European investment markets.",
-    },
-  },
-  {
-    name: { he: "מאיה לוי", en: "Maya Levi" },
-    role: { he: "סמנכ\"לית פיתוח עסקי", en: "VP Business Development" },
-    image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=300&h=300&fit=crop&crop=face",
-    bio: {
-      he: "מומחית בניתוח שווקים ואיתור הזדמנויות השקעה במדינות יעד.",
-      en: "Expert in market analysis and identifying investment opportunities in target countries.",
-    },
-  },
-  {
-    name: { he: "דניאל כהן", en: "Daniel Cohen" },
-    role: { he: "ראש מחלקת משפטית", en: "Head of Legal" },
-    image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&h=300&fit=crop&crop=face",
-    bio: {
-      he: "עו\"ד מומחה בעסקאות נדל\"ן בינלאומיות ומיסוי בין-לאומי.",
-      en: "Attorney specializing in international real estate transactions and cross-border taxation.",
-    },
-  },
-  {
-    name: { he: "נועה אברהם", en: "Noa Avraham" },
-    role: { he: "מנהלת קשרי לקוחות", en: "Client Relations Manager" },
-    image: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=300&h=300&fit=crop&crop=face",
-    bio: {
-      he: "מלווה את המשקיעים שלנו לאורך כל תהליך ההשקעה.",
-      en: "Guides our investors throughout the entire investment process.",
-    },
-  },
-];
 
 const stats = [
   { value: "2019", labelHe: "שנת הקמה", labelEn: "Founded" },
@@ -110,23 +72,18 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* Team */}
+      {/* About the founders */}
       <section className="py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-10 text-center">{t("about.teamTitle")}</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-            {team.map((member) => (
-              <div key={member.name.en} className="text-center">
-                <img
-                  src={member.image}
-                  alt={lang === "he" ? member.name.he : member.name.en}
-                  className="w-32 h-32 rounded-full mx-auto object-cover mb-4 border-4 border-primary-100"
-                />
-                <h3 className="font-bold text-gray-900">{lang === "he" ? member.name.he : member.name.en}</h3>
-                <p className="text-sm text-primary-600 font-medium mb-2">{lang === "he" ? member.role.he : member.role.en}</p>
-                <p className="text-sm text-gray-500">{lang === "he" ? member.bio.he : member.bio.en}</p>
-              </div>
-            ))}
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-8 text-center">
+            {lang === "he" ? "מי אנחנו" : "About Us"}
+          </h2>
+          <div className="bg-white rounded-2xl border border-gray-200 p-8 md:p-12 text-center">
+            <p className="text-gray-700 leading-relaxed text-lg md:text-xl" dir="rtl">
+              מפתחי האתר רצו לאפשר פלטפורמה נוחה — לא רק לנדל&quot;ן בחו&quot;ל, אלא לכל עולם ההשקעות.
+              זאת תוך הנגשת המתווכים הזרים והאופן שבו משקיעים בכל מדינה, כך שכל משקיע ישראלי יוכל לפעול
+              בשוקי נדל&quot;ן בינלאומיים בביטחון, בשקיפות ובפשטות — בלי להתמצא מראש בכל שוק.
+            </p>
           </div>
         </div>
       </section>

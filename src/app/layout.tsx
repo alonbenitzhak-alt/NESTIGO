@@ -86,10 +86,17 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{
             __html: JSON.stringify({
               "@context": "https://schema.org",
-              "@type": "RealEstateAgent",
+              "@type": "Organization",
               name: "MANAIO",
               description: "פלטפורמת השקעות נדל\"ן בינלאומית למשקיעים ישראלים",
               url: SITE_URL,
+              logo: {
+                "@type": "ImageObject",
+                url: `${SITE_URL}/logo.svg`,
+                width: 540,
+                height: 345,
+              },
+              image: `${SITE_URL}/logo.svg`,
               areaServed: ["Greece", "Cyprus", "Georgia", "Portugal"],
               serviceType: "Real Estate Investment Platform",
             }),
