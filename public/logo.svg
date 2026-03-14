@@ -1,0 +1,30 @@
+<svg viewBox="0 0 540 305" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="houseGrad" x1="82" y1="0" x2="458" y2="0" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#1A3A7A"/>
+      <stop offset="100%" stop-color="#4BA830"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Left roof slope -->
+  <line x1="270" y1="18" x2="95" y2="148" stroke="url(#houseGrad)" stroke-width="14" stroke-linecap="square"/>
+  <!-- Right roof slope -->
+  <line x1="270" y1="18" x2="445" y2="148" stroke="url(#houseGrad)" stroke-width="14" stroke-linecap="square"/>
+
+  <!-- Left wall -->
+  <rect x="82" y="141" width="84" height="47" fill="url(#houseGrad)"/>
+  <!-- Right wall -->
+  <rect x="374" y="141" width="84" height="47" fill="url(#houseGrad)"/>
+
+  <!-- Window 2x2 grid -->
+  <rect x="242" y="77" width="26" height="26" rx="2" fill="#1A3A7A"/>
+  <rect x="273" y="77" width="26" height="26" rx="2" fill="#1A3A7A"/>
+  <rect x="242" y="108" width="26" height="26" rx="2" fill="#1A3A7A"/>
+  <rect x="273" y="108" width="26" height="26" rx="2" fill="#1A3A7A"/>
+
+  <!-- MANAIO text -->
+  <text x="270" y="232" font-family="'Arial Black', 'Arial', sans-serif" font-size="82" font-weight="900" fill="#1A3A7A" text-anchor="middle" letter-spacing="5">MANAIO</text>
+
+  <!-- Tagline -->
+  <text x="270" y="275" font-family="Arial, sans-serif" font-size="20" fill="#888888" text-anchor="middle">&#8212; Your Home, Your Future &#8212;</text>
+</svg>

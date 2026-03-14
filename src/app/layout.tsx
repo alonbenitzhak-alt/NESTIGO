@@ -46,6 +46,11 @@ export const metadata: Metadata = {
     description: "פלטפורמת ההשקעות המובילה לנדל\"ן בחו\"ל למשקיעים ישראלים",
     images: ["/og-image.png"],
   },
+  icons: {
+    icon: [{ url: "/icon.svg", type: "image/svg+xml" }],
+    shortcut: "/icon.svg",
+    apple: "/icon.svg",
+  },
   robots: {
     index: true,
     follow: true,

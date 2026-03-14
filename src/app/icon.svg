@@ -1,0 +1,24 @@
+<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="houseGrad" x1="10" y1="0" x2="190" y2="0" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#1A3A7A"/>
+      <stop offset="100%" stop-color="#4BA830"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Left roof slope -->
+  <line x1="100" y1="12" x2="16" y2="72" stroke="url(#houseGrad)" stroke-width="9" stroke-linecap="square"/>
+  <!-- Right roof slope -->
+  <line x1="100" y1="12" x2="184" y2="72" stroke="url(#houseGrad)" stroke-width="9" stroke-linecap="square"/>
+
+  <!-- Left wall -->
+  <rect x="10" y="67" width="44" height="23" fill="url(#houseGrad)"/>
+  <!-- Right wall -->
+  <rect x="146" y="67" width="44" height="23" fill="url(#houseGrad)"/>
+
+  <!-- Window 2x2 grid -->
+  <rect x="87" y="38" width="12" height="12" rx="1" fill="#1A3A7A"/>
+  <rect x="101" y="38" width="12" height="12" rx="1" fill="#1A3A7A"/>
+  <rect x="87" y="52" width="12" height="12" rx="1" fill="#1A3A7A"/>
+  <rect x="101" y="52" width="12" height="12" rx="1" fill="#1A3A7A"/>
+</svg>
