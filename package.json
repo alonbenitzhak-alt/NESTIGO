@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.78.0",
     "@supabase/supabase-js": "^2.99.0",
     "@tailwindcss/postcss": "^4.2.1",
     "@types/node": "^25.4.0",
