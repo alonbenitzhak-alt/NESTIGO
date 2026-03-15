@@ -289,7 +289,7 @@ const translations: Record<string, Record<string, string>> = {
     "card.roi": "תשואה",
     "card.bedroom": "חדר",
     "card.bedrooms": "חדרים",
-    "card.cta": "קבל חבילת השקעה",
+    "card.cta": "לחץ לפרטים נוספים",
 
     // Property Details
     "detail.home": "ראשי",
@@ -688,7 +688,7 @@ const translations: Record<string, Record<string, string>> = {
     "card.roi": "ROI",
     "card.bedroom": "Bedroom",
     "card.bedrooms": "Bedrooms",
-    "card.cta": "Request Investment Package",
+    "card.cta": "Click for More Details",
 
     // Property Details
     "detail.home": "Home",
