@@ -34,7 +34,7 @@ export default function BuyerRegisterPage() {
 
     if (mode === "register") {
       if (!agreedToTerms) {
-        setError(lang === "he" ? "יש לאשר את תנאי השימוש" : "Please agree to the Terms of Service");
+        setError(t("register.buyer.errorTerms"));
         setLoading(false);
         return;
       }
@@ -52,21 +52,13 @@ export default function BuyerRegisterPage() {
     setLoading(false);
   };
 
-  const benefits = lang === "he"
-    ? [
-        "גישה לנכסי השקעה פרימיום ב-4 מדינות",
-        "שמירת נכסים מועדפים ומעקב אחריהם",
-        "מעקב אחר בקשות מידע וסטטוס לידים",
-        "התראות על נכסים חדשים ושינויי מחירים",
-        "מחשבון תשואה והשוואת נכסים",
-      ]
-    : [
-        "Access premium investment properties in 4 countries",
-        "Save favorite properties and track them",
-        "Track information requests and lead status",
-        "Notifications for new properties and price changes",
-        "ROI calculator and property comparison tools",
-      ];
+  const benefits = [
+    t("register.buyer.benefit1"),
+    t("register.buyer.benefit2"),
+    t("register.buyer.benefit3"),
+    t("register.buyer.benefit4"),
+    t("register.buyer.benefit5"),
+  ];
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
@@ -79,12 +71,10 @@ export default function BuyerRegisterPage() {
             </svg>
           </div>
           <h1 className="text-3xl font-bold mb-4">
-            {lang === "he" ? "הצטרפו כמשקיעים" : "Join as an Investor"}
+            {t("register.buyer.joinTitle")}
           </h1>
           <p className="text-primary-200 text-lg mb-10">
-            {lang === "he"
-              ? "גלו הזדמנויות השקעה בנדל\"ן בינלאומי עם ליווי מקצועי מקצה לקצה."
-              : "Discover international real estate investment opportunities with end-to-end professional guidance."}
+            {t("register.buyer.joinSubtitle")}
           </p>
           <ul className="space-y-4">
             {benefits.map((b, i) => (
@@ -107,14 +97,10 @@ export default function BuyerRegisterPage() {
               <img src="/logo.svg" alt="MANAIO" className="h-16 w-auto mx-auto" />
             </Link>
             <h2 className="text-2xl font-bold text-gray-900">
-              {mode === "register"
-                ? (lang === "he" ? "הרשמה כמשקיע" : "Register as Investor")
-                : t("auth.signIn")}
+              {mode === "register" ? t("register.buyer.title") : t("auth.signIn")}
             </h2>
             <p className="text-gray-500 mt-2">
-              {mode === "register"
-                ? (lang === "he" ? "צרו חשבון וגלו הזדמנויות השקעה" : "Create an account and discover investment opportunities")
-                : t("auth.signInDesc")}
+              {mode === "register" ? t("register.buyer.subtitle") : t("auth.signInDesc")}
             </p>
           </div>
 
@@ -151,21 +137,11 @@ export default function BuyerRegisterPage() {
                   className="mt-0.5 w-4 h-4 text-primary-600 rounded"
                 />
                 <label htmlFor="terms-buyer" className="text-sm text-gray-600 leading-relaxed cursor-pointer">
-                  {lang === "he" ? (
-                    <>קראתי ואני מסכים/ה ל
-                      <Link href="/terms" target="_blank" className="text-primary-600 font-semibold hover:underline">תנאי השימוש</Link>
-                      {" "}ול
-                      <Link href="/privacy" target="_blank" className="text-primary-600 font-semibold hover:underline">מדיניות הפרטיות</Link>
-                      {" "}של MANAIO
-                    </>
-                  ) : (
-                    <>I have read and agree to the{" "}
-                      <Link href="/terms" target="_blank" className="text-primary-600 font-semibold hover:underline">Terms of Service</Link>
-                      {" "}and{" "}
-                      <Link href="/privacy" target="_blank" className="text-primary-600 font-semibold hover:underline">Privacy Policy</Link>
-                      {" "}of MANAIO
-                    </>
-                  )}
+                  {t("register.buyer.termsAgree")}{" "}
+                  <Link href="/terms" target="_blank" className="text-primary-600 font-semibold hover:underline">{t("register.buyer.terms")}</Link>
+                  {" "}{t("register.buyer.termsAnd")}{" "}
+                  <Link href="/privacy" target="_blank" className="text-primary-600 font-semibold hover:underline">{t("register.buyer.privacy")}</Link>
+                  {" "}{t("register.buyer.termsOf")}
                 </label>
               </div>
             )}
@@ -174,7 +150,7 @@ export default function BuyerRegisterPage() {
             {success && <p className="text-accent-600 text-sm">{success}</p>}
 
             <button type="submit" disabled={loading} className="w-full bg-primary-600 text-white py-3 rounded-xl font-semibold text-sm hover:bg-primary-700 transition-colors disabled:opacity-50">
-              {loading ? t("auth.pleaseWait") : mode === "register" ? (lang === "he" ? "הרשמה כמשקיע" : "Register as Investor") : t("auth.signIn")}
+              {loading ? t("auth.pleaseWait") : mode === "register" ? t("register.buyer.submit") : t("auth.signIn")}
             </button>
           </form>
 
@@ -194,7 +170,7 @@ export default function BuyerRegisterPage() {
 
           <div className="mt-4 text-center">
             <Link href="/register/agent" className="text-sm text-gray-400 hover:text-primary-600 transition-colors">
-              {lang === "he" ? "סוכן נדל\"ן? הירשמו כאן →" : "Real estate agent? Register here →"}
+              {t("register.buyer.agentLink")}
             </Link>
           </div>
         </div>

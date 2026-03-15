@@ -28,10 +28,6 @@ const statusColors: Record<LeadStatus, string> = {
   closed: "bg-gray-100 text-gray-600",
 };
 
-const statusLabels: Record<string, Record<LeadStatus, string>> = {
-  he: { sent: "נשלח", in_progress: "בטיפול", answered: "נענה", closed: "סגור" },
-  en: { sent: "Sent", in_progress: "In Progress", answered: "Answered", closed: "Closed" },
-};
 
 export default function BuyerDashboard() {
   const { user, profile, loading, updateProfile } = useAuth();
@@ -327,7 +323,7 @@ export default function BuyerDashboard() {
                     </div>
                     <div className="flex items-center gap-3">
                       <span className={`text-xs font-semibold px-3 py-1 rounded-full ${statusColors[lead.status || "sent"]}`}>
-                        {(statusLabels[lang] ?? statusLabels["en"])[lead.status || "sent"]}
+                        {t(`status.${lead.status || "sent"}`)}
                       </span>
                       {(lead.status === "sent" || lead.status === "in_progress") && (
                         <button

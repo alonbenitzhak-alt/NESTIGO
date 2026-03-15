@@ -9,7 +9,7 @@ import { supabase } from "@/lib/supabase";
 
 export default function AgentRegisterPage() {
   const { signIn, signUp, user } = useAuth();
-  const { t, lang } = useLanguage();
+  const { t } = useLanguage();
   const router = useRouter();
   const [mode, setMode] = useState<"register" | "login">("register");
   const [email, setEmail] = useState("");
@@ -29,8 +29,6 @@ export default function AgentRegisterPage() {
     return null;
   }
 
-  const isHe = lang === "he";
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
@@ -42,21 +40,21 @@ export default function AgentRegisterPage() {
 
     const validateFile = (file: File): string | null => {
       if (!ALLOWED_FILE_TYPES.includes(file.type)) {
-        return isHe ? "סוג קובץ לא מורשה. יש להעלות PDF או תמונה (JPG/PNG)" : "Invalid file type. Please upload PDF or image (JPG/PNG)";
+        return t("register.agent.errorInvalidFileType");
       }
       const ext = file.name.split(".").pop()?.toLowerCase() || "";
       if (!ALLOWED_EXTENSIONS.includes(ext)) {
-        return isHe ? "סיומת קובץ לא מורשית" : "Invalid file extension";
+        return t("register.agent.errorInvalidExtension");
       }
       if (file.size > MAX_FILE_SIZE) {
-        return isHe ? "הקובץ גדול מדי. גודל מקסימלי: 5MB" : "File too large. Max size: 5MB";
+        return t("register.agent.errorFileTooLarge");
       }
       return null;
     };
 
     if (mode === "register") {
       if (!licenseFile) {
-        setError(isHe ? "יש להעלות רישיון תיווך" : "Please upload your broker license");
+        setError(t("register.agent.errorNoLicense"));
         setLoading(false);
         return;
       }
@@ -64,14 +62,14 @@ export default function AgentRegisterPage() {
       if (licenseErr) { setError(licenseErr); setLoading(false); return; }
 
       if (!idFile) {
-        setError(isHe ? "יש להעלות תעודת זהות" : "Please upload your ID card");
+        setError(t("register.agent.errorNoId"));
         setLoading(false);
         return;
       }
       const idErr = validateFile(idFile);
       if (idErr) { setError(idErr); setLoading(false); return; }
       if (!agreedToPartnership) {
-        setError(isHe ? "יש לאשר את הסכם השותפות" : "Please agree to the partnership agreement");
+        setError(t("register.agent.errorNoPartnership"));
         setLoading(false);
         return;
       }
@@ -165,14 +163,10 @@ export default function AgentRegisterPage() {
               <img src="/logo.svg" alt="MANAIO" className="h-12 w-auto mx-auto" />
             </Link>
             <h2 className="text-2xl font-bold text-gray-900">
-              {mode === "register"
-                ? (isHe ? "הרשמה כסוכן נדל\"ן" : "Register as Agent")
-                : t("auth.signIn")}
+              {mode === "register" ? t("register.agent.title") : t("auth.signIn")}
             </h2>
             <p className="text-gray-500 mt-1 text-sm">
-              {mode === "register"
-                ? (isHe ? "צרו חשבון והתחילו לפרסם נכסים" : "Create an account and start listing properties")
-                : t("auth.signInDesc")}
+              {mode === "register" ? t("register.agent.subtitle") : t("auth.signInDesc")}
             </p>
           </div>
 
@@ -185,15 +179,13 @@ export default function AgentRegisterPage() {
                 </svg>
               </div>
               <h3 className="text-xl font-bold text-amber-800 mb-3">
-                {isHe ? "הבקשה נשלחה לבדיקה" : "Application Submitted"}
+                {t("register.agent.pending")}
               </h3>
               <p className="text-amber-700 text-sm leading-relaxed mb-4">
-                {isHe
-                  ? "תודה על ההרשמה! הבקשה שלכם נמצאת בבדיקה על ידי צוות MANAIO. נחזור אליכם תוך 1-2 ימי עסקים לאחר אישור רישיון התיווך וחוזה השותפות."
-                  : "Thank you for registering! Your application is being reviewed by the MANAIO team. We will get back to you within 1-2 business days after verifying your broker license and partnership agreement."}
+                {t("register.agent.pendingDesc")}
               </p>
               <p className="text-xs text-amber-600">
-                {isHe ? "שאלות? צרו קשר: " : "Questions? Contact us: "}
+                {t("register.agent.questions")}{" "}
                 <a href="mailto:agents@mymanaio.com" className="font-semibold underline">agents@mymanaio.com</a>
               </p>
             </div>
@@ -213,16 +205,16 @@ export default function AgentRegisterPage() {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      {isHe ? "שם חברה" : "Company Name"}
+                      {t("register.agent.companyName")}
                     </label>
-                    <input type="text" value={company} onChange={(e) => setCompany(e.target.value)} className="w-full px-4 py-2.5 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-primary-500 outline-none" placeholder={isHe ? "שם החברה שלכם (לא חובה)" : "Your company name (optional)"} />
+                    <input type="text" value={company} onChange={(e) => setCompany(e.target.value)} className="w-full px-4 py-2.5 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-primary-500 outline-none" placeholder={t("register.agent.companyNamePlaceholder")} />
                   </div>
 
                   {/* Document uploads */}
                   <div className="grid grid-cols-1 gap-3">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        {isHe ? "רישיון תיווך *" : "Broker License *"}
+                        {t("register.agent.brokerLicense")}
                       </label>
                       <input
                         type="file"
@@ -232,12 +224,12 @@ export default function AgentRegisterPage() {
                         required
                       />
                       <p className="text-xs text-gray-400 mt-0.5">
-                        {isHe ? "PDF, JPG או PNG — עד 5MB" : "PDF, JPG or PNG — up to 5MB"}
+                        {t("register.agent.fileFormats")}
                       </p>
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        {isHe ? "תעודת זהות *" : "ID Card *"}
+                        {t("register.agent.idCard")}
                       </label>
                       <input
                         type="file"
@@ -247,7 +239,7 @@ export default function AgentRegisterPage() {
                         required
                       />
                       <p className="text-xs text-gray-400 mt-0.5">
-                        {isHe ? "PDF, JPG או PNG — עד 5MB" : "PDF, JPG or PNG — up to 5MB"}
+                        {t("register.agent.fileFormats")}
                       </p>
                     </div>
                   </div>
@@ -274,21 +266,11 @@ export default function AgentRegisterPage() {
                     className="mt-0.5 w-4 h-4 text-primary-600 rounded"
                   />
                   <label htmlFor="partnership" className="text-sm text-gray-600 leading-relaxed cursor-pointer">
-                    {isHe ? (
-                      <>קראתי ואני מסכים/ה לתנאי{" "}
-                        <Link href="/partnership" target="_blank" className="text-primary-600 font-semibold hover:underline">
-                          הסכם השותפות
-                        </Link>{" "}
-                        עם חברת MANAIO
-                      </>
-                    ) : (
-                      <>I have read and agree to the{" "}
-                        <Link href="/partnership" target="_blank" className="text-primary-600 font-semibold hover:underline">
-                          Partnership Agreement
-                        </Link>{" "}
-                        with MANAIO
-                      </>
-                    )}
+                    {t("register.agent.partnershipAgree")}{" "}
+                    <Link href="/partnership" target="_blank" className="text-primary-600 font-semibold hover:underline">
+                      {t("register.agent.partnershipName")}
+                    </Link>{" "}
+                    {t("register.agent.partnershipWith")}
                   </label>
                 </div>
               )}
@@ -296,7 +278,7 @@ export default function AgentRegisterPage() {
               {error && <p className="text-red-500 text-sm">{error}</p>}
 
               <button type="submit" disabled={loading} className="w-full bg-primary-600 text-white py-3 rounded-xl font-semibold text-sm hover:bg-primary-700 transition-colors disabled:opacity-50">
-                {loading ? t("auth.pleaseWait") : mode === "register" ? (isHe ? "שלח בקשת הרשמה" : "Submit Application") : t("auth.signIn")}
+                {loading ? t("auth.pleaseWait") : mode === "register" ? t("register.agent.submit") : t("auth.signIn")}
               </button>
             </form>
           )}
@@ -318,7 +300,7 @@ export default function AgentRegisterPage() {
               </div>
               <div className="mt-3 text-center">
                 <Link href="/register/buyer" className="text-sm text-gray-400 hover:text-primary-600 transition-colors">
-                  {isHe ? "משקיע? הירשמו כאן →" : "Investor? Register here →"}
+                  {t("register.agent.investorLink")}
                 </Link>
               </div>
             </>

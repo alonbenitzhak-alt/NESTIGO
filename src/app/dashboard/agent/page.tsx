@@ -28,10 +28,6 @@ const statusColors: Record<LeadStatus, string> = {
   closed: "bg-gray-100 text-gray-600",
 };
 
-const statusLabels: Record<string, Record<LeadStatus, string>> = {
-  he: { sent: "נשלח", in_progress: "בטיפול", answered: "נענה", closed: "סגור" },
-  en: { sent: "Sent", in_progress: "In Progress", answered: "Answered", closed: "Closed" },
-};
 
 const AMENITIES_LIST = [
   { key: "amenity.parking", he: "חניה", en: "Parking" },
@@ -171,7 +167,7 @@ function AgentPropertyForm({
 
       {/* Section: Basic Info */}
       <div>
-        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">{lang === "he" ? "פרטים בסיסיים" : "Basic Details"}</p>
+        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">{t("dashboard.agent.basicDetails")}</p>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="md:col-span-2">
             <label className="block text-sm font-medium text-gray-700 mb-1">{t("dashboard.agent.propTitle")}</label>
@@ -191,7 +187,7 @@ function AgentPropertyForm({
             <input type="text" required value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} className={inputCls} />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">{lang === "he" ? "שכונה" : "Neighborhood"}</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">{t("dashboard.agent.neighborhood")}</label>
             <input type="text" value={form.neighborhood} onChange={(e) => setForm({ ...form, neighborhood: e.target.value })} className={inputCls} />
           </div>
           <div>
@@ -205,7 +201,7 @@ function AgentPropertyForm({
 
       {/* Section: Financial */}
       <div>
-        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">{lang === "he" ? "מחיר ותשואה" : "Price & Returns"}</p>
+        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">{t("dashboard.agent.priceReturns")}</p>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">{t("dashboard.agent.price")}</label>
@@ -219,7 +215,7 @@ function AgentPropertyForm({
           <div>
             <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-1 cursor-pointer">
               <input type="checkbox" checked={form.show_roi} onChange={(e) => setForm({ ...form, show_roi: e.target.checked })} className="w-4 h-4 text-primary-600 rounded" />
-              {lang === "he" ? "הוסף תשואה צפויה (%)" : "Add Expected ROI (%)"}
+              {t("dashboard.agent.addExpectedRoi")}
             </label>
             {form.show_roi && (
               <input type="number" min={0} step={0.1} value={form.expected_roi} onChange={(e) => setForm({ ...form, expected_roi: parseFloat(e.target.value) || 0 })} className={inputCls} />
@@ -230,40 +226,40 @@ function AgentPropertyForm({
 
       {/* Section: Property specs */}
       <div>
-        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">{lang === "he" ? "מפרט הנכס" : "Property Specs"}</p>
+        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">{t("dashboard.agent.propertySpecs")}</p>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">{t("dashboard.agent.bedrooms")}</label>
             <input type="number" required min={0} value={form.bedrooms} onChange={(e) => setForm({ ...form, bedrooms: parseInt(e.target.value) || 0 })} className={inputCls} />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">{lang === "he" ? "חדרי שירות" : "Bathrooms"}</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">{t("dashboard.agent.bathrooms")}</label>
             <input type="number" required min={0} value={form.bathrooms} onChange={(e) => setForm({ ...form, bathrooms: parseInt(e.target.value) || 0 })} className={inputCls} />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">{lang === "he" ? "שטח (מ״ר)" : "Area (sqm)"}</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">{t("dashboard.agent.areaSqm")}</label>
             <input type="number" min={0} value={form.area_sqm} onChange={(e) => setForm({ ...form, area_sqm: parseInt(e.target.value) || 0 })} className={inputCls} />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">{lang === "he" ? "קומה" : "Floor"}</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">{t("dashboard.agent.floor")}</label>
             <input type="number" min={0} value={form.floor} onChange={(e) => setForm({ ...form, floor: e.target.value })} className={inputCls} placeholder="—" />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">{lang === "he" ? "שנת בנייה" : "Year Built"}</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">{t("dashboard.agent.yearBuilt")}</label>
             <input type="number" min={1900} max={2030} value={form.year_built} onChange={(e) => setForm({ ...form, year_built: e.target.value })} className={inputCls} placeholder="2020" />
           </div>
         </div>
         <div className="mt-4">
           <label className="flex items-center gap-2 cursor-pointer">
             <input type="checkbox" checked={form.furnished} onChange={(e) => setForm({ ...form, furnished: e.target.checked })} className="w-4 h-4 text-primary-600 rounded" />
-            <span className="text-sm font-medium text-gray-700">{lang === "he" ? "מרוהט" : "Furnished"}</span>
+            <span className="text-sm font-medium text-gray-700">{t("dashboard.agent.furnished")}</span>
           </label>
         </div>
       </div>
 
       {/* Section: Amenities */}
       <div>
-        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">{lang === "he" ? "מתקנים ואביזרים" : "Amenities"}</p>
+        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">{t("dashboard.agent.amenitiesLabel")}</p>
         <div className="flex flex-wrap gap-2">
           {AMENITIES_LIST.map((a) => (
             <button key={a.he} type="button" onClick={() => toggleAmenity(a.he)}
@@ -284,8 +280,8 @@ function AgentPropertyForm({
 
       {/* Section: Images Upload */}
       <div>
-        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">{lang === "he" ? "תמונות הנכס" : "Property Images"}</p>
-        <p className="text-xs text-gray-400 mb-3">{lang === "he" ? "לחץ על תמונה כדי להגדיר אותה כראשית (כוכב = ראשית)" : "Click an image to set it as primary (★ = primary)"}</p>
+        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">{t("dashboard.agent.propertyImages")}</p>
+        <p className="text-xs text-gray-400 mb-3">{t("dashboard.agent.clickToSetPrimary")}</p>
 
         {/* Image previews */}
         {allImagesPreview.length > 0 && (
@@ -309,15 +305,15 @@ function AgentPropertyForm({
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
           </svg>
-          {lang === "he" ? "הוסף תמונה" : "Add Image"}
+          {t("dashboard.agent.addImageBtn")}
           <input type="file" accept="image/*" multiple onChange={handleFileAdd} className="hidden" />
         </label>
-        <p className="text-xs text-gray-400 mt-1">{lang === "he" ? "JPG, PNG, WEBP — ניתן לבחור מספר קבצים" : "JPG, PNG, WEBP — multiple files allowed"}</p>
+        <p className="text-xs text-gray-400 mt-1">{t("dashboard.agent.imageFormats")}</p>
       </div>
 
       <div className="flex gap-3 pt-2">
         <button type="submit" disabled={uploading} className="bg-primary-600 text-white px-6 py-2.5 rounded-xl font-semibold text-sm hover:bg-primary-700 transition-colors disabled:opacity-50">
-          {uploading ? (lang === "he" ? "מעלה תמונות..." : "Uploading...") : property ? t("dashboard.agent.updateProperty") : t("dashboard.agent.addProperty")}
+          {uploading ? t("dashboard.agent.uploading") : property ? t("dashboard.agent.updateProperty") : t("dashboard.agent.addProperty")}
         </button>
         <button type="button" onClick={onCancel} className="border border-gray-300 text-gray-700 px-6 py-2.5 rounded-xl font-semibold text-sm hover:bg-gray-50 transition-colors">
           {t("admin.cancel")}
@@ -329,8 +325,9 @@ function AgentPropertyForm({
 
 /* ─────── Pending Approval Screen ─────── */
 function PendingApprovalScreen({
-  userId, refreshProfile, lang,
-}: { userId: string; refreshProfile: () => Promise<void>; lang: string }) {
+  userId, refreshProfile,
+}: { userId: string; refreshProfile: () => Promise<void> }) {
+  const { t } = useLanguage();
   useEffect(() => {
     const channel = supabase
       .channel(`profile-approved-${userId}`)
@@ -356,19 +353,17 @@ function PendingApprovalScreen({
           </svg>
         </div>
         <h1 className="text-2xl font-bold text-amber-800 mb-3">
-          {lang === "he" ? "הבקשה שלכם בבדיקה" : "Your Application is Under Review"}
+          {t("dashboard.agent.applicationReview")}
         </h1>
         <p className="text-amber-700 leading-relaxed mb-6">
-          {lang === "he"
-            ? "תודה על ההרשמה! צוות MANAIO בודק את רישיון התיווך שלכם ואת הסכם השותפות. תקבלו הודעה במייל לאחר אישור החשבון (בדרך כלל תוך 1-2 ימי עסקים)."
-            : "Thank you for registering! The MANAIO team is reviewing your broker license and partnership agreement. You will receive an email once your account is approved (usually within 1-2 business days)."}
+          {t("dashboard.agent.pendingDesc")}
         </p>
         <div className="flex items-center justify-center gap-2 text-xs text-amber-500 mb-6">
           <span className="w-2 h-2 bg-amber-400 rounded-full animate-pulse" />
-          {lang === "he" ? "ממתין לאישור — הדף יתעדכן אוטומטית" : "Waiting for approval — page will update automatically"}
+          {t("dashboard.agent.waitingApproval")}
         </div>
         <div className="text-sm text-amber-600 bg-amber-100 rounded-xl px-4 py-3 inline-block">
-          {lang === "he" ? "שאלות? " : "Questions? "}
+          {t("dashboard.agent.questions")}{" "}
           <a href="mailto:agents@mymanaio.com" className="font-semibold underline">agents@mymanaio.com</a>
         </div>
       </div>
@@ -527,7 +522,7 @@ export default function AgentDashboard() {
 
   // Agent is registered but not yet approved by admin — with realtime approval detection
   if (profile?.approved === false || profile?.approved === null) {
-    return <PendingApprovalScreen userId={user!.id} refreshProfile={refreshProfile} lang={lang} />;
+    return <PendingApprovalScreen userId={user!.id} refreshProfile={refreshProfile} />;
   }
 
   // Stats
@@ -820,7 +815,7 @@ export default function AgentDashboard() {
                         <div className="flex items-center gap-3 mb-2">
                           <h3 className="font-semibold text-gray-900">{lead.name}</h3>
                           <span className={`text-xs font-semibold px-3 py-1 rounded-full ${statusColors[lead.status || "sent"]}`}>
-                            {(statusLabels[lang] ?? statusLabels["en"])[lead.status || "sent"]}
+                            {t(`status.${lead.status || "sent"}`)}
                           </span>
                         </div>
                         <p className="text-sm text-gray-600 mb-1">
@@ -840,10 +835,10 @@ export default function AgentDashboard() {
                           onChange={(e) => handleUpdateLeadStatus(lead.id!, e.target.value as LeadStatus)}
                           className="text-sm border border-gray-300 rounded-xl px-3 py-2 bg-white focus:ring-2 focus:ring-primary-500 outline-none"
                         >
-                          <option value="sent">{(statusLabels[lang] ?? statusLabels["en"]).sent}</option>
-                          <option value="in_progress">{(statusLabels[lang] ?? statusLabels["en"]).in_progress}</option>
-                          <option value="answered">{(statusLabels[lang] ?? statusLabels["en"]).answered}</option>
-                          <option value="closed">{(statusLabels[lang] ?? statusLabels["en"]).closed}</option>
+                          <option value="sent">{t("status.sent")}</option>
+                          <option value="in_progress">{t("status.in_progress")}</option>
+                          <option value="answered">{t("status.answered")}</option>
+                          <option value="closed">{t("status.closed")}</option>
                         </select>
                       </div>
                     </div>

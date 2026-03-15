@@ -305,6 +305,7 @@ function LeadsTab() {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
   const { properties } = useProperties();
+  const { t, lang } = useLanguage();
 
   useEffect(() => {
     const fetchLeads = async () => {
@@ -319,28 +320,28 @@ function LeadsTab() {
   }, []);
 
   const getPropertyTitle = (id: string | null) => {
-    if (!id) return "פנייה כללית";
+    if (!id) return t("admin.generalInquiry");
     const prop = properties.find((p) => p.id === id);
-    return prop?.title || `נכס #${id}`;
+    return prop?.title || `#${id}`;
   };
 
-  if (loading) return <div className="text-center py-16 text-gray-400">טוען לידים...</div>;
+  if (loading) return <div className="text-center py-16 text-gray-400">{t("admin.loadingLeads")}</div>;
 
   return leads.length === 0 ? (
-    <div className="text-center py-16 text-gray-400">אין לידים עדיין</div>
+    <div className="text-center py-16 text-gray-400">{t("admin.noLeads")}</div>
   ) : (
     <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
             <tr className="bg-gray-50 border-b border-gray-200">
-              <th className="text-right px-6 py-3 font-semibold text-gray-600">שם</th>
-              <th className="text-right px-6 py-3 font-semibold text-gray-600">אימייל</th>
-              <th className="text-right px-6 py-3 font-semibold text-gray-600">טלפון</th>
-              <th className="text-right px-6 py-3 font-semibold text-gray-600">תקציב</th>
-              <th className="text-right px-6 py-3 font-semibold text-gray-600">נכס</th>
-              <th className="text-right px-6 py-3 font-semibold text-gray-600">הודעה</th>
-              <th className="text-right px-6 py-3 font-semibold text-gray-600">תאריך</th>
+              <th className="text-right px-6 py-3 font-semibold text-gray-600">{t("admin.leads.name")}</th>
+              <th className="text-right px-6 py-3 font-semibold text-gray-600">{t("admin.leads.email")}</th>
+              <th className="text-right px-6 py-3 font-semibold text-gray-600">{t("admin.leads.phone")}</th>
+              <th className="text-right px-6 py-3 font-semibold text-gray-600">{t("admin.leads.budget")}</th>
+              <th className="text-right px-6 py-3 font-semibold text-gray-600">{t("admin.leads.property")}</th>
+              <th className="text-right px-6 py-3 font-semibold text-gray-600">{t("admin.leads.message")}</th>
+              <th className="text-right px-6 py-3 font-semibold text-gray-600">{t("admin.leads.date")}</th>
             </tr>
           </thead>
           <tbody>
@@ -357,7 +358,7 @@ function LeadsTab() {
                 <td className="px-6 py-4 text-gray-600 max-w-[200px] truncate">{getPropertyTitle(lead.property_id)}</td>
                 <td className="px-6 py-4 text-gray-500 max-w-[200px] truncate">{lead.message || "—"}</td>
                 <td className="px-6 py-4 text-gray-400 whitespace-nowrap">
-                  {lead.created_at ? new Date(lead.created_at).toLocaleDateString("he-IL") : "—"}
+                  {lead.created_at ? new Date(lead.created_at).toLocaleDateString(lang === "he" || lang === "ar" ? "he-IL" : "en-US") : "—"}
                 </td>
               </tr>
             ))}
@@ -371,6 +372,7 @@ function LeadsTab() {
 /* ─────────────── Agents Tab ─────────────── */
 function AgentsTab() {
   const { properties } = useProperties();
+  const { t } = useLanguage();
 
   const agents = useMemo(() => {
     const map = new Map<string, { name: string; email: string; country: string; city: string; propertyCount: number }>();
@@ -387,18 +389,18 @@ function AgentsTab() {
   }, [properties]);
 
   return agents.length === 0 ? (
-    <div className="text-center py-16 text-gray-400">לא נמצאו סוכנים</div>
+    <div className="text-center py-16 text-gray-400">{t("admin.noAgents")}</div>
   ) : (
     <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
             <tr className="bg-gray-50 border-b border-gray-200">
-              <th className="text-right px-6 py-3 font-semibold text-gray-600">סוכן</th>
-              <th className="text-right px-6 py-3 font-semibold text-gray-600">אימייל</th>
-              <th className="text-right px-6 py-3 font-semibold text-gray-600">מדינה</th>
-              <th className="text-right px-6 py-3 font-semibold text-gray-600">עיר</th>
-              <th className="text-right px-6 py-3 font-semibold text-gray-600">נכסים</th>
+              <th className="text-right px-6 py-3 font-semibold text-gray-600">{t("admin.agents.agent")}</th>
+              <th className="text-right px-6 py-3 font-semibold text-gray-600">{t("admin.leads.email")}</th>
+              <th className="text-right px-6 py-3 font-semibold text-gray-600">{t("admin.agents.country")}</th>
+              <th className="text-right px-6 py-3 font-semibold text-gray-600">{t("admin.agents.city")}</th>
+              <th className="text-right px-6 py-3 font-semibold text-gray-600">{t("admin.agents.properties")}</th>
             </tr>
           </thead>
           <tbody>
@@ -443,7 +445,7 @@ type PendingAgent = {
   approved?: boolean | null;
 };
 
-function DocStatus({ url, label, icon }: { url: string | null; label: string; icon: React.ReactNode }) {
+function DocStatus({ url, label, icon, missingLabel }: { url: string | null; label: string; icon: React.ReactNode; missingLabel: string }) {
   const handleView = async () => {
     if (!url) return;
     // Generate a short-lived signed URL (60 seconds) for private bucket access
@@ -471,7 +473,7 @@ function DocStatus({ url, label, icon }: { url: string | null; label: string; ic
     <div className="flex items-center gap-2 bg-red-50 border border-red-200 text-red-600 rounded-xl px-3 py-2 text-sm font-medium">
       <span className="w-5 h-5 text-red-400 shrink-0">{icon}</span>
       <span>{label}</span>
-      <span className="ms-auto text-xs text-red-400">חסר</span>
+      <span className="ms-auto text-xs text-red-400">{missingLabel}</span>
     </div>
   );
 }
@@ -480,6 +482,7 @@ function PendingAgentsTab() {
   const [agents, setAgents] = useState<PendingAgent[]>([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const { t, lang } = useLanguage();
 
   const fetchAgents = async () => {
     const { data } = await supabase
@@ -532,7 +535,7 @@ function PendingAgentsTab() {
   };
 
   const handleReject = async (id: string) => {
-    if (!confirm("האם אתה בטוח שברצונך לדחות סוכן זה?")) return;
+    if (!confirm(t("admin.rejectConfirm"))) return;
     setActionLoading(id);
     const agent = agents.find(a => a.id === id);
     await supabase.from("profiles").update({ approved: false, role: "buyer" }).eq("id", id);
@@ -547,14 +550,14 @@ function PendingAgentsTab() {
     setActionLoading(null);
   };
 
-  if (loading) return <div className="text-center py-16 text-gray-400">טוען...</div>;
+  if (loading) return <div className="text-center py-16 text-gray-400">{t("admin.loading")}</div>;
 
   return agents.length === 0 ? (
     <div className="text-center py-16 text-gray-400">
       <svg className="w-12 h-12 mx-auto mb-3 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
       </svg>
-      <p>אין בקשות סוכנים ממתינות</p>
+      <p>{t("admin.pendingAgents.noPending")}</p>
     </div>
   ) : (
     <div className="space-y-5">
@@ -566,9 +569,9 @@ function PendingAgentsTab() {
             <div className="flex items-start justify-between gap-4 mb-5">
               <div>
                 <div className="flex items-center gap-2 mb-1.5 flex-wrap">
-                  <span className="bg-amber-100 text-amber-700 text-xs font-bold px-2.5 py-1 rounded-full">ממתין לאישור</span>
+                  <span className="bg-amber-100 text-amber-700 text-xs font-bold px-2.5 py-1 rounded-full">{t("admin.pendingApproval")}</span>
                   {!allDocsOk && (
-                    <span className="bg-red-100 text-red-600 text-xs font-bold px-2.5 py-1 rounded-full">מסמכים חסרים</span>
+                    <span className="bg-red-100 text-red-600 text-xs font-bold px-2.5 py-1 rounded-full">{t("admin.missingDocuments")}</span>
                   )}
                 </div>
                 <h3 className="font-bold text-gray-900 text-lg leading-tight">{agent.full_name || "—"}</h3>
@@ -576,7 +579,7 @@ function PendingAgentsTab() {
                 {agent.phone && <p className="text-sm text-gray-500 mt-0.5">{agent.phone}</p>}
                 {agent.company && <p className="text-sm text-gray-500">{agent.company}</p>}
                 <p className="text-xs text-gray-400 mt-1">
-                  נרשם: {new Date(agent.created_at).toLocaleDateString("he-IL")}
+                  {t("admin.registered")} {new Date(agent.created_at).toLocaleDateString(lang === "he" || lang === "ar" ? "he-IL" : "en-US")}
                 </p>
               </div>
               <div className="flex gap-2 shrink-0">
@@ -588,7 +591,7 @@ function PendingAgentsTab() {
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
-                  אשר
+                  {t("admin.approve")}
                 </button>
                 <button
                   onClick={() => handleReject(agent.id)}
@@ -598,7 +601,7 @@ function PendingAgentsTab() {
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
-                  דחה
+                  {t("admin.reject")}
                 </button>
               </div>
             </div>
@@ -607,7 +610,8 @@ function PendingAgentsTab() {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <DocStatus
                 url={agent.license_url}
-                label="רישיון תיווך"
+                label={t("admin.brokerLicense")}
+                missingLabel={t("admin.missing")}
                 icon={
                   <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" className="w-full h-full">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -616,7 +620,8 @@ function PendingAgentsTab() {
               />
               <DocStatus
                 url={agent.id_url}
-                label="תעודת זהות"
+                label={t("admin.idCard")}
+                missingLabel={t("admin.missing")}
                 icon={
                   <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" className="w-full h-full">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2" />
@@ -629,16 +634,16 @@ function PendingAgentsTab() {
                   <svg className="w-5 h-5 text-green-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
-                  <span>הסכם שותפות</span>
-                  <span className="ms-auto text-xs text-green-500">אושר</span>
+                  <span>{t("admin.partnershipAgreement")}</span>
+                  <span className="ms-auto text-xs text-green-500">{t("admin.partnershipApproved")}</span>
                 </div>
               ) : (
                 <div className="flex items-center gap-2 bg-red-50 border border-red-200 text-red-600 rounded-xl px-3 py-2 text-sm font-medium">
                   <svg className="w-5 h-5 text-red-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
-                  <span>הסכם שותפות</span>
-                  <span className="ms-auto text-xs text-red-400">לא נחתם</span>
+                  <span>{t("admin.partnershipAgreement")}</span>
+                  <span className="ms-auto text-xs text-red-400">{t("admin.notSigned")}</span>
                 </div>
               )}
             </div>
@@ -653,6 +658,7 @@ function PendingAgentsTab() {
 function UsersTab() {
   const [users, setUsers] = useState<{ id: string; email: string; role: string; created_at: string }[]>([]);
   const [loading, setLoading] = useState(true);
+  const { t, lang } = useLanguage();
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -668,11 +674,11 @@ function UsersTab() {
     fetchUsers();
   }, []);
 
-  if (loading) return <div className="text-center py-16 text-gray-400">טוען משתמשים...</div>;
+  if (loading) return <div className="text-center py-16 text-gray-400">{t("admin.loadingUsers")}</div>;
 
   return users.length === 0 ? (
     <div className="text-center py-16 text-gray-400">
-      <p>לא נמצאו משתמשים רשומים</p>
+      <p>{t("admin.noUsers")}</p>
     </div>
   ) : (
     <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
@@ -680,9 +686,9 @@ function UsersTab() {
         <table className="w-full text-sm">
           <thead>
             <tr className="bg-gray-50 border-b border-gray-200">
-              <th className="text-right px-6 py-3 font-semibold text-gray-600">אימייל</th>
-              <th className="text-right px-6 py-3 font-semibold text-gray-600">תפקיד</th>
-              <th className="text-right px-6 py-3 font-semibold text-gray-600">הצטרף</th>
+              <th className="text-right px-6 py-3 font-semibold text-gray-600">{t("admin.leads.email")}</th>
+              <th className="text-right px-6 py-3 font-semibold text-gray-600">{t("admin.users.role")}</th>
+              <th className="text-right px-6 py-3 font-semibold text-gray-600">{t("admin.users.joined")}</th>
             </tr>
           </thead>
           <tbody>
@@ -691,7 +697,7 @@ function UsersTab() {
                 <td className="px-6 py-4 font-medium text-gray-900">{u.email}</td>
                 <td className="px-6 py-4 text-gray-600">{u.role}</td>
                 <td className="px-6 py-4 text-gray-400">
-                  {new Date(u.created_at).toLocaleDateString("he-IL")}
+                  {new Date(u.created_at).toLocaleDateString(lang === "he" || lang === "ar" ? "he-IL" : "en-US")}
                 </td>
               </tr>
             ))}
@@ -719,6 +725,7 @@ function FinanceTab() {
   const [agents, setAgents] = useState<{ id: string; full_name: string; email: string }[]>([]);
   const [leads, setLeads] = useState<FinanceLead[]>([]);
   const [loading, setLoading] = useState(true);
+  const { t, lang } = useLanguage();
   const [showForm, setShowForm] = useState(false);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
@@ -774,7 +781,7 @@ function FinanceTab() {
   };
 
   const handleDeletePayment = async (paymentId: string) => {
-    if (!confirm("למחוק תשלום זה?")) return;
+    if (!confirm(t("admin.finance.deleteConfirm"))) return;
     setActionLoading(paymentId);
     await supabase.from("payments").delete().eq("id", paymentId);
     setPayments((prev) => prev.filter((p) => p.id !== paymentId));
@@ -800,13 +807,13 @@ function FinanceTab() {
   };
 
   const handleExportCSV = () => {
-    const headers = ["סוכן", "אימייל", "סוג", "סכום", "סטטוס", "הערות", "תאריך"];
+    const headers = [t("admin.finance.agent"), t("admin.leads.email"), t("admin.finance.type"), t("admin.finance.amountLabel"), t("admin.finance.status"), t("admin.finance.notesCol"), t("admin.finance.dateCol")];
     const rows = payments.map((p) => {
       const agent = agents.find((a) => a.id === p.agent_id);
       return [
         agent?.full_name || "", agent?.email || "",
         p.type, p.amount, p.status, p.notes || "",
-        p.created_at ? new Date(p.created_at).toLocaleDateString("he-IL") : "",
+        p.created_at ? new Date(p.created_at).toLocaleDateString(lang === "he" || lang === "ar" ? "he-IL" : "en-US") : "",
       ];
     });
     const csv = [headers.join(","), ...rows.map((r) => r.map((c) => `"${c}"`).join(","))].join("\n");
@@ -816,9 +823,9 @@ function FinanceTab() {
     URL.revokeObjectURL(url);
   };
 
-  if (loading) return <div className="text-center py-16 text-gray-400">טוען נתוני כספים...</div>;
+  if (loading) return <div className="text-center py-16 text-gray-400">{t("admin.loadingFinance")}</div>;
 
-  const typeLabels: Record<PaymentType, string> = { lead_fee: "דמי ליד", commission: "עמלה", bonus: "בונוס" };
+  const typeLabels: Record<PaymentType, string> = { lead_fee: t("admin.finance.leadFee"), commission: t("admin.finance.commission"), bonus: t("admin.finance.bonus") };
   const typeColors: Record<PaymentType, string> = { lead_fee: "bg-blue-100 text-blue-700", commission: "bg-purple-100 text-purple-700", bonus: "bg-amber-100 text-amber-700" };
 
   return (
@@ -826,15 +833,15 @@ function FinanceTab() {
       {/* Summary cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
         <div className="bg-white rounded-2xl border border-gray-200 p-5">
-          <p className="text-sm text-gray-500 mb-1">סה״כ חויב</p>
+          <p className="text-sm text-gray-500 mb-1">{t("admin.finance.totalCharged")}</p>
           <p className="text-3xl font-bold text-blue-600">₪{totalOwed.toLocaleString()}</p>
         </div>
         <div className="bg-white rounded-2xl border border-gray-200 p-5">
-          <p className="text-sm text-gray-500 mb-1">שולם</p>
+          <p className="text-sm text-gray-500 mb-1">{t("admin.finance.paid")}</p>
           <p className="text-3xl font-bold text-green-600">₪{totalPaid.toLocaleString()}</p>
         </div>
         <div className="bg-white rounded-2xl border border-gray-200 p-5">
-          <p className="text-sm text-gray-500 mb-1">ממתין לתשלום</p>
+          <p className="text-sm text-gray-500 mb-1">{t("admin.finance.pendingPayment")}</p>
           <p className="text-3xl font-bold text-amber-600">₪{totalPending.toLocaleString()}</p>
         </div>
       </div>
@@ -842,17 +849,17 @@ function FinanceTab() {
       {/* Per-agent summary */}
       {agentSummaries.length > 0 && (
         <div className="mb-8">
-          <h3 className="text-lg font-bold text-gray-900 mb-4">סיכום לפי סוכן</h3>
+          <h3 className="text-lg font-bold text-gray-900 mb-4">{t("admin.finance.agentSummary")}</h3>
           <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="bg-gray-50 border-b border-gray-200">
-                    <th className="text-right px-6 py-3 font-semibold text-gray-600">סוכן</th>
-                    <th className="text-right px-6 py-3 font-semibold text-gray-600">לידים</th>
-                    <th className="text-right px-6 py-3 font-semibold text-gray-600">סה״כ חויב</th>
-                    <th className="text-right px-6 py-3 font-semibold text-gray-600">שולם</th>
-                    <th className="text-right px-6 py-3 font-semibold text-gray-600">יתרה</th>
+                    <th className="text-right px-6 py-3 font-semibold text-gray-600">{t("admin.finance.agent")}</th>
+                    <th className="text-right px-6 py-3 font-semibold text-gray-600">{t("admin.finance.leads")}</th>
+                    <th className="text-right px-6 py-3 font-semibold text-gray-600">{t("admin.finance.totalOwed")}</th>
+                    <th className="text-right px-6 py-3 font-semibold text-gray-600">{t("admin.finance.paid")}</th>
+                    <th className="text-right px-6 py-3 font-semibold text-gray-600">{t("admin.finance.balance")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -888,19 +895,19 @@ function FinanceTab() {
 
       {/* Payment actions */}
       <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
-        <h3 className="text-lg font-bold text-gray-900">פירוט תשלומים</h3>
+        <h3 className="text-lg font-bold text-gray-900">{t("admin.finance.paymentDetails")}</h3>
         <div className="flex gap-2">
           <button onClick={handleExportCSV} className="text-sm font-medium text-primary-600 border border-primary-200 px-4 py-2 rounded-xl hover:bg-primary-50 transition-colors inline-flex items-center gap-2">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
-            ייצוא CSV
+            {t("admin.finance.exportCSV")}
           </button>
           <button onClick={() => setShowForm(!showForm)} className="bg-primary-600 text-white px-4 py-2 rounded-xl font-semibold text-sm hover:bg-primary-700 transition-colors inline-flex items-center gap-2">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
-            הוסף תשלום
+            {t("admin.finance.addPayment")}
           </button>
         </div>
       </div>
@@ -908,47 +915,47 @@ function FinanceTab() {
       {/* Add payment form */}
       {showForm && (
         <form onSubmit={handleAddPayment} className="bg-white rounded-2xl border border-gray-200 p-6 mb-6 space-y-4">
-          <h4 className="font-bold text-gray-900">הוספת תשלום / עמלה</h4>
+          <h4 className="font-bold text-gray-900">{t("admin.finance.addPaymentTitle")}</h4>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">סוכן</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t("admin.finance.agent")}</label>
               <select required value={formAgent} onChange={(e) => setFormAgent(e.target.value)} className="w-full px-4 py-2.5 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-primary-500 outline-none bg-white">
-                <option value="">בחר סוכן...</option>
+                <option value="">{t("admin.finance.selectAgent")}</option>
                 {agents.map((a) => <option key={a.id} value={a.id}>{a.full_name || a.email}</option>)}
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">סוג</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t("admin.finance.type")}</label>
               <select value={formType} onChange={(e) => setFormType(e.target.value as PaymentType)} className="w-full px-4 py-2.5 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-primary-500 outline-none bg-white">
-                <option value="lead_fee">דמי ליד</option>
-                <option value="commission">עמלה</option>
-                <option value="bonus">בונוס</option>
+                <option value="lead_fee">{t("admin.finance.leadFee")}</option>
+                <option value="commission">{t("admin.finance.commission")}</option>
+                <option value="bonus">{t("admin.finance.bonus")}</option>
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">סכום (₪)</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t("admin.finance.amount")}</label>
               <input type="number" required min={0} step={0.01} value={formAmount} onChange={(e) => setFormAmount(e.target.value)} className="w-full px-4 py-2.5 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-primary-500 outline-none" placeholder="0.00" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">ליד קשור (אופציונלי)</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t("admin.finance.relatedLead")}</label>
               <select value={formLead} onChange={(e) => setFormLead(e.target.value)} className="w-full px-4 py-2.5 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-primary-500 outline-none bg-white">
-                <option value="">ללא ליד ספציפי</option>
+                <option value="">{t("admin.finance.noSpecificLead")}</option>
                 {leads.filter((l) => !formAgent || l.agent_id === formAgent).map((l) => (
-                  <option key={l.id} value={l.id}>{l.name} — {l.created_at ? new Date(l.created_at).toLocaleDateString("he-IL") : ""}</option>
+                  <option key={l.id} value={l.id}>{l.name} — {l.created_at ? new Date(l.created_at).toLocaleDateString(lang === "he" || lang === "ar" ? "he-IL" : "en-US") : ""}</option>
                 ))}
               </select>
             </div>
             <div className="sm:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1">הערות</label>
-              <input type="text" value={formNotes} onChange={(e) => setFormNotes(e.target.value)} className="w-full px-4 py-2.5 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-primary-500 outline-none" placeholder="הערה כלשהי..." />
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t("admin.finance.notes")}</label>
+              <input type="text" value={formNotes} onChange={(e) => setFormNotes(e.target.value)} className="w-full px-4 py-2.5 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-primary-500 outline-none" placeholder={t("admin.finance.notesPlaceholder")} />
             </div>
           </div>
           <div className="flex gap-3">
             <button type="submit" disabled={formSaving} className="bg-primary-600 text-white px-6 py-2.5 rounded-xl font-semibold text-sm hover:bg-primary-700 transition-colors disabled:opacity-50">
-              {formSaving ? "שומר..." : "הוסף תשלום"}
+              {formSaving ? t("admin.finance.saving") : t("admin.finance.addPayment")}
             </button>
             <button type="button" onClick={() => setShowForm(false)} className="border border-gray-300 text-gray-700 px-6 py-2.5 rounded-xl font-semibold text-sm hover:bg-gray-50 transition-colors">
-              ביטול
+              {t("admin.cancel")}
             </button>
           </div>
         </form>
@@ -956,20 +963,20 @@ function FinanceTab() {
 
       {/* Payments table */}
       {payments.length === 0 ? (
-        <div className="text-center py-16 text-gray-400">אין תשלומים עדיין</div>
+        <div className="text-center py-16 text-gray-400">{t("admin.finance.noPayments")}</div>
       ) : (
         <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="bg-gray-50 border-b border-gray-200">
-                  <th className="text-right px-6 py-3 font-semibold text-gray-600">סוכן</th>
-                  <th className="text-right px-6 py-3 font-semibold text-gray-600">סוג</th>
-                  <th className="text-right px-6 py-3 font-semibold text-gray-600">סכום</th>
-                  <th className="text-right px-6 py-3 font-semibold text-gray-600">סטטוס</th>
-                  <th className="text-right px-6 py-3 font-semibold text-gray-600">הערות</th>
-                  <th className="text-right px-6 py-3 font-semibold text-gray-600">תאריך</th>
-                  <th className="text-left px-6 py-3 font-semibold text-gray-600">פעולות</th>
+                  <th className="text-right px-6 py-3 font-semibold text-gray-600">{t("admin.finance.agent")}</th>
+                  <th className="text-right px-6 py-3 font-semibold text-gray-600">{t("admin.finance.type")}</th>
+                  <th className="text-right px-6 py-3 font-semibold text-gray-600">{t("admin.finance.amountLabel")}</th>
+                  <th className="text-right px-6 py-3 font-semibold text-gray-600">{t("admin.finance.status")}</th>
+                  <th className="text-right px-6 py-3 font-semibold text-gray-600">{t("admin.finance.notesCol")}</th>
+                  <th className="text-right px-6 py-3 font-semibold text-gray-600">{t("admin.finance.dateCol")}</th>
+                  <th className="text-left px-6 py-3 font-semibold text-gray-600">{t("admin.finance.actionsCol")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -987,13 +994,13 @@ function FinanceTab() {
                       <td className="px-6 py-4 font-semibold">₪{(p.amount || 0).toLocaleString()}</td>
                       <td className="px-6 py-4">
                         <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${p.status === "paid" ? "bg-green-100 text-green-700" : "bg-amber-100 text-amber-700"}`}>
-                          {p.status === "paid" ? "שולם" : "ממתין"}
+                          {p.status === "paid" ? t("admin.finance.paid") : t("admin.finance.pending")}
                         </span>
-                        {p.paid_at && <p className="text-xs text-gray-400 mt-0.5">{new Date(p.paid_at).toLocaleDateString("he-IL")}</p>}
+                        {p.paid_at && <p className="text-xs text-gray-400 mt-0.5">{new Date(p.paid_at).toLocaleDateString(lang === "he" || lang === "ar" ? "he-IL" : "en-US")}</p>}
                       </td>
                       <td className="px-6 py-4 text-gray-500 max-w-[160px] truncate">{p.notes || "—"}</td>
                       <td className="px-6 py-4 text-gray-400 whitespace-nowrap">
-                        {p.created_at ? new Date(p.created_at).toLocaleDateString("he-IL") : "—"}
+                        {p.created_at ? new Date(p.created_at).toLocaleDateString(lang === "he" || lang === "ar" ? "he-IL" : "en-US") : "—"}
                       </td>
                       <td className="px-6 py-4 text-left">
                         <div className="flex items-center gap-2">
@@ -1003,7 +1010,7 @@ function FinanceTab() {
                               disabled={actionLoading === p.id}
                               className="text-green-600 hover:text-green-700 font-medium text-sm disabled:opacity-50"
                             >
-                              סמן כשולם
+                              {t("admin.finance.markPaid")}
                             </button>
                           )}
                           <button
@@ -1011,7 +1018,7 @@ function FinanceTab() {
                             disabled={actionLoading === p.id}
                             className="text-red-500 hover:text-red-600 font-medium text-sm disabled:opacity-50"
                           >
-                            מחק
+                            {t("admin.finance.deletePayment")}
                           </button>
                         </div>
                       </td>

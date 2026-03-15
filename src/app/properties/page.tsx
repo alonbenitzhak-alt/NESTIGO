@@ -63,7 +63,7 @@ function PropertiesContent() {
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder={t("properties.search") || "חיפוש לפי עיר, מדינה, סוג נכס..."}
+            placeholder={t("properties.search")}
             className="w-full border border-gray-200 rounded-xl px-4 py-3 pr-10 text-sm focus:ring-2 focus:ring-primary-500 outline-none bg-white"
           />
         </div>
@@ -169,7 +169,7 @@ export default function PropertiesPage() {
   return (
     <>
       <PropertiesPageHeader />
-      <Suspense fallback={<div className="max-w-7xl mx-auto px-4 py-20 text-center text-gray-400">Loading...</div>}>
+      <Suspense fallback={<div className="max-w-7xl mx-auto px-4 py-20 text-center text-gray-400">{/* loading */}</div>}>
         <PropertiesContent />
       </Suspense>
     </>
