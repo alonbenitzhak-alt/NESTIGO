@@ -33,6 +33,7 @@ export const countries: Country[] = [
   },
   {
     slug: "georgia",
+    comingSoon: true,
     name: "Georgia",
     description:
       "Georgia has emerged as one of the most investor-friendly countries in the world, ranking among the top nations for ease of doing business. The country offers zero property tax, minimal transaction costs, and straightforward foreign ownership regulations. Tbilisi and Batumi have seen rapid tourism growth, driving strong demand for short-term rentals with ROI potential exceeding 12%. Georgia's affordable property prices make it an excellent entry point for first-time international investors. The country's growing tech sector and digital nomad appeal continue to fuel real estate demand.",
@@ -48,6 +49,7 @@ export const countries: Country[] = [
   },
   {
     slug: "portugal",
+    comingSoon: true,
     name: "Portugal",
     description:
       "Portugal consistently ranks as one of Europe's best countries for real estate investment, offering a combination of strong rental yields, lifestyle quality, and residency benefits. The country's tourism sector has seen explosive growth, making cities like Lisbon and Porto prime locations for short-term rental investments. Portugal offers a favorable tax regime for foreign investors, including the Non-Habitual Resident (NHR) program. Property values have shown consistent appreciation, and the market remains more affordable than other Western European capitals. Portuguese culture, cuisine, and climate make it an appealing destination for investors seeking both returns and lifestyle benefits.",

@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 
-type Lang = "he" | "en";
+export type Lang = "he" | "en" | "el" | "ru" | "ar";
 
 interface LanguageContextType {
   lang: Lang;
@@ -11,7 +11,184 @@ interface LanguageContextType {
   dir: "rtl" | "ltr";
 }
 
-const translations: Record<Lang, Record<string, string>> = {
+const elTranslations: Record<string, string> = {
+  "nav.home": "Αρχική",
+  "nav.properties": "Ακίνητα",
+  "nav.countries": "Χώρες",
+  "nav.howItWorks": "Πώς λειτουργεί",
+  "nav.contact": "Επικοινωνία",
+  "nav.browseInvestments": "Αναζήτηση",
+  "nav.signIn": "Σύνδεση",
+  "nav.signOut": "Αποσύνδεση",
+  "nav.admin": "Διαχείριση",
+  "nav.favorites": "Αγαπημένα",
+  "nav.calculator": "Υπολογιστής",
+  "nav.blog": "Blog",
+  "nav.about": "Σχετικά",
+  "nav.compare": "Σύγκριση",
+  "nav.dashboard": "Dashboard",
+  "nav.notifications": "Ειδοποιήσεις",
+  "auth.signIn": "Σύνδεση",
+  "auth.signUp": "Εγγραφή",
+  "auth.signOut": "Αποσύνδεση",
+  "auth.password": "Κωδικός",
+  "auth.passwordPlaceholder": "Τουλάχιστον 6 χαρακτήρες",
+  "auth.pleaseWait": "Παρακαλώ περιμένετε...",
+  "auth.hasAccount": "Έχετε λογαριασμό;",
+  "auth.noAccount": "Δεν έχετε λογαριασμό;",
+  "auth.checkEmail": "Ελέγξτε το email σας",
+  "form.name": "Όνομα",
+  "form.namePlaceholder": "Πλήρες όνομα",
+  "form.email": "Email",
+  "form.emailPlaceholder": "your@email.com",
+  "form.phone": "Τηλέφωνο",
+  "form.phonePlaceholder": "+30...",
+  "form.budget": "Προϋπολογισμός",
+  "form.budgetPlaceholder": "Επιλέξτε εύρος",
+  "form.message": "Μήνυμα",
+  "form.error": "Κάτι πήγε στραβά. Δοκιμάστε ξανά.",
+  "form.thankYou": "Ευχαριστούμε!",
+  "form.thankYouSub": "Η αίτησή σας υποβλήθηκε.",
+  "countries.title": "Χώρες Επένδυσης",
+  "countries.subtitle": "Ανακαλύψτε ευκαιρίες σε κορυφαίες αγορές",
+  "countries.available": "διαθέσιμα",
+  "countries.backToCountries": "Πίσω στις χώρες",
+  "countries.notFound": "Χώρα δεν βρέθηκε",
+  "properties.property": "ακίνητο",
+  "properties.propertiesNoun": "ακίνητα",
+  "footer.quickLinks": "Γρήγοροι Σύνδεσμοι",
+  "footer.investmentCountries": "Χώρες Επένδυσης",
+  "footer.contact": "Επικοινωνία",
+  "footer.greece": "Ελλάδα",
+  "footer.cyprus": "Κύπρος",
+  "footer.georgia": "Γεωργία",
+  "footer.portugal": "Πορτογαλία",
+  "footer.rights": "Με επιφύλαξη παντός δικαιώματος.",
+  "footer.privacy": "Πολιτική Απορρήτου",
+  "footer.terms": "Όροι Χρήσης",
+  "notifications.markAllRead": "Σήμανση ως αναγνωσμένα",
+  "notifications.empty": "Δεν υπάρχουν ειδοποιήσεις",
+};
+
+const ruTranslations: Record<string, string> = {
+  "nav.home": "Главная",
+  "nav.properties": "Объекты",
+  "nav.countries": "Страны",
+  "nav.howItWorks": "Как это работает",
+  "nav.contact": "Контакты",
+  "nav.browseInvestments": "Просмотр",
+  "nav.signIn": "Войти",
+  "nav.signOut": "Выйти",
+  "nav.admin": "Админ",
+  "nav.favorites": "Избранное",
+  "nav.calculator": "Калькулятор",
+  "nav.blog": "Блог",
+  "nav.about": "О нас",
+  "nav.compare": "Сравнение",
+  "nav.dashboard": "Панель",
+  "nav.notifications": "Уведомления",
+  "auth.signIn": "Войти",
+  "auth.signUp": "Регистрация",
+  "auth.signOut": "Выйти",
+  "auth.password": "Пароль",
+  "auth.passwordPlaceholder": "Минимум 6 символов",
+  "auth.pleaseWait": "Пожалуйста, подождите...",
+  "auth.hasAccount": "Уже есть аккаунт?",
+  "auth.noAccount": "Нет аккаунта?",
+  "auth.checkEmail": "Проверьте свой email",
+  "form.name": "Имя",
+  "form.namePlaceholder": "Полное имя",
+  "form.email": "Email",
+  "form.emailPlaceholder": "your@email.com",
+  "form.phone": "Телефон",
+  "form.phonePlaceholder": "+7...",
+  "form.budget": "Бюджет",
+  "form.budgetPlaceholder": "Выберите диапазон",
+  "form.message": "Сообщение",
+  "form.error": "Что-то пошло не так. Попробуйте ещё раз.",
+  "form.thankYou": "Спасибо!",
+  "form.thankYouSub": "Ваша заявка отправлена.",
+  "countries.title": "Страны для инвестиций",
+  "countries.subtitle": "Откройте возможности на лучших рынках",
+  "countries.available": "доступно",
+  "countries.backToCountries": "Назад к странам",
+  "countries.notFound": "Страна не найдена",
+  "properties.property": "объект",
+  "properties.propertiesNoun": "объектов",
+  "footer.quickLinks": "Быстрые ссылки",
+  "footer.investmentCountries": "Страны инвестиций",
+  "footer.contact": "Контакты",
+  "footer.greece": "Греция",
+  "footer.cyprus": "Кипр",
+  "footer.georgia": "Грузия",
+  "footer.portugal": "Португалия",
+  "footer.rights": "Все права защищены.",
+  "footer.privacy": "Политика конфиденциальности",
+  "footer.terms": "Условия использования",
+  "notifications.markAllRead": "Отметить все как прочитанные",
+  "notifications.empty": "Нет уведомлений",
+};
+
+const arTranslations: Record<string, string> = {
+  "nav.home": "الرئيسية",
+  "nav.properties": "العقارات",
+  "nav.countries": "الدول",
+  "nav.howItWorks": "كيف يعمل",
+  "nav.contact": "اتصل بنا",
+  "nav.browseInvestments": "تصفح",
+  "nav.signIn": "تسجيل الدخول",
+  "nav.signOut": "تسجيل الخروج",
+  "nav.admin": "الإدارة",
+  "nav.favorites": "المفضلة",
+  "nav.calculator": "الحاسبة",
+  "nav.blog": "المدونة",
+  "nav.about": "عن الموقع",
+  "nav.compare": "مقارنة",
+  "nav.dashboard": "لوحة التحكم",
+  "nav.notifications": "الإشعارات",
+  "auth.signIn": "تسجيل الدخول",
+  "auth.signUp": "إنشاء حساب",
+  "auth.signOut": "تسجيل الخروج",
+  "auth.password": "كلمة المرور",
+  "auth.passwordPlaceholder": "6 أحرف على الأقل",
+  "auth.pleaseWait": "يرجى الانتظار...",
+  "auth.hasAccount": "لديك حساب بالفعل؟",
+  "auth.noAccount": "ليس لديك حساب؟",
+  "auth.checkEmail": "تحقق من بريدك الإلكتروني",
+  "form.name": "الاسم",
+  "form.namePlaceholder": "الاسم الكامل",
+  "form.email": "البريد الإلكتروني",
+  "form.emailPlaceholder": "your@email.com",
+  "form.phone": "الهاتف",
+  "form.phonePlaceholder": "+971...",
+  "form.budget": "الميزانية",
+  "form.budgetPlaceholder": "اختر النطاق",
+  "form.message": "الرسالة",
+  "form.error": "حدث خطأ ما. حاول مرة أخرى.",
+  "form.thankYou": "شكراً!",
+  "form.thankYouSub": "تم إرسال طلبك بنجاح.",
+  "countries.title": "دول الاستثمار",
+  "countries.subtitle": "اكتشف الفرص في أفضل الأسواق",
+  "countries.available": "متاح",
+  "countries.backToCountries": "العودة إلى الدول",
+  "countries.notFound": "الدولة غير موجودة",
+  "properties.property": "عقار",
+  "properties.propertiesNoun": "عقارات",
+  "footer.quickLinks": "روابط سريعة",
+  "footer.investmentCountries": "دول الاستثمار",
+  "footer.contact": "اتصل بنا",
+  "footer.greece": "اليونان",
+  "footer.cyprus": "قبرص",
+  "footer.georgia": "جورجيا",
+  "footer.portugal": "البرتغال",
+  "footer.rights": "جميع الحقوق محفوظة.",
+  "footer.privacy": "سياسة الخصوصية",
+  "footer.terms": "شروط الاستخدام",
+  "notifications.markAllRead": "تحديد الكل كمقروء",
+  "notifications.empty": "لا توجد إشعارات",
+};
+
+const translations: Record<string, Record<string, string>> = {
   he: {
     // Navbar
     "nav.home": "ראשי",
@@ -785,7 +962,12 @@ const translations: Record<Lang, Record<string, string>> = {
     "footer.privacy": "Privacy Policy",
     "footer.terms": "Terms of Service",
   },
+  el: elTranslations,
+  ru: ruTranslations,
+  ar: arTranslations,
 };
+
+const VALID_LANGS: Lang[] = ["he", "en", "el", "ru", "ar"];
 
 const LanguageContext = createContext<LanguageContextType>({
   lang: "he",
@@ -799,7 +981,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const stored = localStorage.getItem("manaio_lang") as Lang | null;
-    if (stored && (stored === "he" || stored === "en")) {
+    if (stored && VALID_LANGS.includes(stored)) {
       setLangState(stored);
     }
   }, []);
@@ -809,8 +991,16 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     localStorage.setItem("manaio_lang", newLang);
   };
 
-  const t = (key: string) => translations[lang][key] || key;
-  const dir = lang === "he" ? "rtl" : "ltr";
+  // For el/ru/ar, fall back to English if key not found
+  const t = (key: string) => {
+    const val = translations[lang]?.[key];
+    if (val) return val;
+    if (lang === "el" || lang === "ru" || lang === "ar") {
+      return translations["en"][key] || key;
+    }
+    return key;
+  };
+  const dir: "rtl" | "ltr" = lang === "he" || lang === "ar" ? "rtl" : "ltr";
 
   return (
     <LanguageContext.Provider value={{ lang, setLang, t, dir }}>

@@ -12,6 +12,7 @@ export function LayoutWrapper({ children }: { children: ReactNode }) {
   useEffect(() => {
     document.documentElement.lang = lang;
     document.documentElement.dir = dir;
+    document.documentElement.setAttribute("data-lang", lang);
   }, [lang, dir]);
 
   const handleSplashFinish = useCallback(() => {

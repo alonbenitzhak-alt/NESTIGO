@@ -88,6 +88,7 @@ export interface Country {
   description: string;
   image: string;
   highlights: string[];
+  comingSoon?: boolean;
 }
 
 export interface BlogPost {

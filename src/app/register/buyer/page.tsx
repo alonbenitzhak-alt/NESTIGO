@@ -15,6 +15,7 @@ export default function BuyerRegisterPage() {
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState("");
@@ -32,6 +33,11 @@ export default function BuyerRegisterPage() {
     setLoading(true);
 
     if (mode === "register") {
+      if (!agreedToTerms) {
+        setError(lang === "he" ? "יש לאשר את תנאי השימוש" : "Please agree to the Terms of Service");
+        setLoading(false);
+        return;
+      }
       const { error } = await signUp(email, password, "buyer");
       if (error) setError(error);
       else {
@@ -133,6 +139,36 @@ export default function BuyerRegisterPage() {
               <label className="block text-sm font-medium text-gray-700 mb-1">{t("auth.password")}</label>
               <input type="password" required minLength={6} value={password} onChange={(e) => setPassword(e.target.value)} className="w-full px-4 py-2.5 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-primary-500 outline-none" placeholder={t("auth.passwordPlaceholder")} />
             </div>
+
+            {/* Terms of Service — shown only on register mode */}
+            {mode === "register" && (
+              <div className="flex items-start gap-3 bg-gray-50 border border-gray-200 rounded-xl p-3">
+                <input
+                  type="checkbox"
+                  id="terms-buyer"
+                  checked={agreedToTerms}
+                  onChange={(e) => setAgreedToTerms(e.target.checked)}
+                  className="mt-0.5 w-4 h-4 text-primary-600 rounded"
+                />
+                <label htmlFor="terms-buyer" className="text-sm text-gray-600 leading-relaxed cursor-pointer">
+                  {lang === "he" ? (
+                    <>קראתי ואני מסכים/ה ל
+                      <Link href="/terms" target="_blank" className="text-primary-600 font-semibold hover:underline">תנאי השימוש</Link>
+                      {" "}ול
+                      <Link href="/privacy" target="_blank" className="text-primary-600 font-semibold hover:underline">מדיניות הפרטיות</Link>
+                      {" "}של MANAIO
+                    </>
+                  ) : (
+                    <>I have read and agree to the{" "}
+                      <Link href="/terms" target="_blank" className="text-primary-600 font-semibold hover:underline">Terms of Service</Link>
+                      {" "}and{" "}
+                      <Link href="/privacy" target="_blank" className="text-primary-600 font-semibold hover:underline">Privacy Policy</Link>
+                      {" "}of MANAIO
+                    </>
+                  )}
+                </label>
+              </div>
+            )}
 
             {error && <p className="text-red-500 text-sm">{error}</p>}
             {success && <p className="text-accent-600 text-sm">{success}</p>}

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/lib/AuthContext";
 import { useFavorites } from "@/lib/FavoritesContext";
-import { useLanguage } from "@/lib/LanguageContext";
+import { useLanguage, Lang } from "@/lib/LanguageContext";
 import { supabase } from "@/lib/supabase";
 import { Notification } from "@/lib/types";
 import LoginForm from "./LoginForm";
@@ -74,7 +74,6 @@ export default function Navbar() {
     { href: "/calculator", label: t("nav.calculator") },
     { href: "/blog", label: t("nav.blog") },
     { href: "/about", label: t("nav.about") },
-    { href: "/contact", label: t("nav.contact") },
   ];
 
   return (
@@ -177,13 +176,18 @@ export default function Navbar() {
                 </div>
               )}
 
-              {/* Language Toggle */}
-              <button
-                onClick={() => setLang(lang === "he" ? "en" : "he")}
-                className="text-xs font-bold border border-gray-200 rounded-lg px-2.5 py-1.5 text-gray-600 hover:bg-gray-50 transition-colors"
+              {/* Language Selector */}
+              <select
+                value={lang}
+                onChange={(e) => setLang(e.target.value as Lang)}
+                className="text-xs font-bold border border-gray-200 rounded-lg px-2 py-1.5 text-gray-600 hover:bg-gray-50 transition-colors bg-white cursor-pointer outline-none focus:ring-2 focus:ring-primary-500"
               >
-                {lang === "he" ? "EN" : "עב"}
-              </button>
+                <option value="he">עב</option>
+                <option value="en">EN</option>
+                <option value="el">ΕΛ</option>
+                <option value="ru">РУ</option>
+                <option value="ar">ع</option>
+              </select>
 
               {user ? (
                 <div className="flex items-center gap-3">
@@ -273,12 +277,19 @@ export default function Navbar() {
             >
               {t("nav.favorites")} {favorites.length > 0 && `(${favorites.length})`}
             </Link>
-            <button
-              onClick={() => setLang(lang === "he" ? "en" : "he")}
-              className="block w-full text-start text-base font-medium text-primary-600 hover:bg-primary-50 rounded-lg px-3 py-3"
-            >
-              {lang === "he" ? "Switch to English" : "עבור לעברית"}
-            </button>
+            <div className="px-3 py-2">
+              <select
+                value={lang}
+                onChange={(e) => { setLang(e.target.value as Lang); setMobileOpen(false); }}
+                className="w-full text-base font-medium text-primary-600 bg-primary-50 rounded-lg px-3 py-2 cursor-pointer outline-none border border-primary-100"
+              >
+                <option value="he">עברית</option>
+                <option value="en">English</option>
+                <option value="el">Ελληνικά</option>
+                <option value="ru">Русский</option>
+                <option value="ar">العربية</option>
+              </select>
+            </div>
             {user ? (
               <>
                 <Link
