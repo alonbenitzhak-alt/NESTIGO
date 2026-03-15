@@ -3,6 +3,7 @@
 import { useLanguage } from "@/lib/LanguageContext";
 import { useEffect, useState, useCallback, ReactNode } from "react";
 import SplashScreen from "@/components/SplashScreen";
+import AIChatWidget from "@/components/AIChatWidget";
 
 export function LayoutWrapper({ children }: { children: ReactNode }) {
   const { lang, dir } = useLanguage();
@@ -23,6 +24,7 @@ export function LayoutWrapper({ children }: { children: ReactNode }) {
       <div className={showSplash ? "opacity-0" : "opacity-100 transition-opacity duration-500"}>
         {children}
       </div>
+      <AIChatWidget />
     </>
   );
 }

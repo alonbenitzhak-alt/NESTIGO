@@ -1,145 +1,77 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { useLanguage } from "@/lib/LanguageContext";
+import { useAuth } from "@/lib/AuthContext";
 
-interface Message {
+interface ChatMessage {
   role: "user" | "assistant";
   content: string;
 }
 
 export default function AIChatWidget() {
-  const { lang } = useLanguage();
+  const { profile, isAdmin, loading } = useAuth();
   const [open, setOpen] = useState(false);
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
-  const [loading, setLoading] = useState(false);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLTextAreaElement>(null);
+  const [thinking, setThinking] = useState(false);
+  const bottomRef = useRef<HTMLDivElement>(null);
 
-  const isHe = lang === "he";
-
-  const placeholder = isHe ? "שאל אותי כל שאלה על השקעות נדל\"ן..." : "Ask me anything about real estate investing...";
-  const titleText = isHe ? "יועץ השקעות AI" : "AI Investment Advisor";
-  const subtitleText = isHe ? "מענה מיידי על שאלותיך" : "Instant answers to your questions";
-  const sendText = isHe ? "שלח" : "Send";
-
-  const greeting: Message = {
-    role: "assistant",
-    content: isHe
-      ? "שלום! אני יועץ ה-AI של MANAIO. אני כאן לעזור לך למצוא הזדמנויות השקעה בנדל\"ן בינלאומי — יוון, קפריסין, גאורגיה ופורטוגל. במה אוכל לעזור?"
-      : "Hello! I'm MANAIO's AI advisor. I'm here to help you find international real estate investment opportunities in Greece, Cyprus, Georgia, and Portugal. How can I help you?",
-  };
+  // Only show for approved agents or admins
+  const isApprovedAgent = profile?.role === "agent" && profile?.approved === true;
+  const canUseChat = isAdmin || isApprovedAgent;
 
   useEffect(() => {
-    if (open && messages.length === 0) {
-      setMessages([greeting]);
-    }
-  }, [open]);
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, open]);
 
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  if (loading || !canUseChat) return null;
 
-  const sendMessage = async () => {
+  const handleSend = async (e: React.FormEvent) => {
+    e.preventDefault();
     const text = input.trim();
-    if (!text || loading) return;
+    if (!text || thinking) return;
 
-    const newMessages: Message[] = [...messages, { role: "user", content: text }];
-    setMessages(newMessages);
+    const userMsg: ChatMessage = { role: "user", content: text };
+    const updated = [...messages, userMsg];
+    setMessages(updated);
     setInput("");
-    setLoading(true);
-
-    // Add empty assistant message for streaming
-    setMessages((prev) => [...prev, { role: "assistant", content: "" }]);
+    setThinking(true);
 
     try {
-      const response = await fetch("/api/ai-chat", {
+      const res = await fetch("/api/ai-chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          messages: newMessages.map((m) => ({ role: m.role, content: m.content })),
-        }),
+        body: JSON.stringify({ messages: updated }),
       });
-
-      if (!response.ok || !response.body) throw new Error("Failed");
-
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-      let accumulated = "";
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        accumulated += decoder.decode(value, { stream: true });
-        setMessages((prev) => {
-          const updated = [...prev];
-          updated[updated.length - 1] = { role: "assistant", content: accumulated };
-          return updated;
-        });
+      const data = await res.json();
+      if (data.reply) {
+        setMessages((prev) => [...prev, { role: "assistant", content: data.reply }]);
       }
     } catch {
-      setMessages((prev) => {
-        const updated = [...prev];
-        updated[updated.length - 1] = {
-          role: "assistant",
-          content: isHe ? "מצטערים, אירעה שגיאה. נסה שוב." : "Sorry, an error occurred. Please try again.",
-        };
-        return updated;
-      });
+      setMessages((prev) => [...prev, { role: "assistant", content: "מצטער, אירעה שגיאה. נסה שוב." }]);
     } finally {
-      setLoading(false);
-      inputRef.current?.focus();
-    }
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      sendMessage();
+      setThinking(false);
     }
   };
 
   return (
-    <>
-      {/* Floating Button */}
-      {!open && (
-        <button
-          onClick={() => setOpen(true)}
-          className="fixed bottom-6 right-6 z-50 flex items-center gap-2 bg-primary-600 hover:bg-primary-700 text-white px-4 py-3 rounded-full shadow-lg transition-all hover:scale-105 active:scale-95"
-          aria-label="Open AI chat"
-        >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
-          </svg>
-          <span className="text-sm font-semibold">{isHe ? "יועץ AI" : "AI Advisor"}</span>
-        </button>
-      )}
-
-      {/* Chat Window */}
+    <div className="fixed bottom-6 left-6 z-50 flex flex-col items-start gap-2">
       {open && (
-        <div
-          className="fixed bottom-6 right-6 z-50 flex flex-col bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden"
-          style={{ width: "380px", height: "560px" }}
-          dir={isHe ? "rtl" : "ltr"}
-        >
+        <div className="w-80 sm:w-96 bg-white rounded-2xl shadow-2xl border border-gray-200 flex flex-col overflow-hidden" style={{ height: 480 }}>
           {/* Header */}
-          <div className="bg-gradient-to-r from-primary-700 to-primary-500 px-4 py-3 flex items-center justify-between shrink-0">
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 bg-white/20 rounded-full flex items-center justify-center">
-                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="bg-gradient-to-r from-primary-800 to-primary-600 px-4 py-3 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
+                <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
                 </svg>
               </div>
               <div>
-                <p className="text-white font-semibold text-sm">{titleText}</p>
-                <p className="text-primary-100 text-xs">{subtitleText}</p>
+                <p className="text-white font-semibold text-sm">יועץ MANAIO AI</p>
+                <p className="text-primary-200 text-xs">מומחה השקעות נדל&quot;ן</p>
               </div>
             </div>
-            <button
-              onClick={() => setOpen(false)}
-              className="text-white/80 hover:text-white transition-colors p-1 rounded-lg hover:bg-white/10"
-            >
+            <button onClick={() => setOpen(false)} className="text-white/70 hover:text-white">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
@@ -147,61 +79,79 @@ export default function AIChatWidget() {
           </div>
 
           {/* Messages */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50">
+          <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50" dir="rtl">
+            {messages.length === 0 && (
+              <div className="text-center py-8">
+                <div className="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                  <svg className="w-6 h-6 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                  </svg>
+                </div>
+                <p className="text-sm font-medium text-gray-700">שאל אותי כל שאלה</p>
+                <p className="text-xs text-gray-400 mt-1">השקעות נדל&quot;ן, תשואות, שווקים</p>
+              </div>
+            )}
             {messages.map((msg, i) => (
-              <div key={i} className={`flex ${msg.role === "user" ? (isHe ? "justify-start" : "justify-end") : (isHe ? "justify-end" : "justify-start")}`}>
-                {msg.role === "assistant" && (
-                  <div className={`w-7 h-7 rounded-full bg-primary-100 flex items-center justify-center shrink-0 ${isHe ? "ml-2" : "mr-2"} mt-1`}>
-                    <svg className="w-4 h-4 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                    </svg>
-                  </div>
-                )}
-                <div
-                  className={`max-w-[75%] px-3 py-2 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap ${
-                    msg.role === "user"
-                      ? "bg-primary-600 text-white rounded-br-sm"
-                      : "bg-white text-gray-800 shadow-sm border border-gray-100 rounded-bl-sm"
-                  } ${msg.content === "" && msg.role === "assistant" ? "animate-pulse" : ""}`}
-                >
-                  {msg.content || (msg.role === "assistant" && loading ? "..." : "")}
+              <div key={i} className={`flex ${msg.role === "user" ? "justify-start" : "justify-end"}`}>
+                <div className={`max-w-[82%] px-3 py-2 rounded-2xl text-sm whitespace-pre-wrap leading-relaxed ${
+                  msg.role === "user"
+                    ? "bg-primary-600 text-white rounded-br-sm"
+                    : "bg-white border border-gray-200 text-gray-800 rounded-bl-sm"
+                }`}>
+                  {msg.content}
                 </div>
               </div>
             ))}
-            <div ref={messagesEndRef} />
+            {thinking && (
+              <div className="flex justify-end">
+                <div className="bg-white border border-gray-200 px-4 py-2.5 rounded-2xl rounded-bl-sm">
+                  <div className="flex gap-1 items-center">
+                    <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
+                    <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
+                    <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+                  </div>
+                </div>
+              </div>
+            )}
+            <div ref={bottomRef} />
           </div>
 
           {/* Input */}
-          <div className="p-3 border-t border-gray-100 bg-white shrink-0">
-            <div className="flex gap-2 items-end">
-              <textarea
-                ref={inputRef}
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder={placeholder}
-                rows={1}
-                disabled={loading}
-                className="flex-1 resize-none px-3 py-2 text-sm border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 outline-none text-gray-800 placeholder-gray-400 disabled:opacity-50"
-                style={{ maxHeight: "80px", minHeight: "36px" }}
-              />
-              <button
-                onClick={sendMessage}
-                disabled={loading || !input.trim()}
-                className="bg-primary-600 hover:bg-primary-700 text-white p-2 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
-                aria-label={sendText}
-              >
-                <svg className={`w-5 h-5 ${isHe ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-                </svg>
-              </button>
-            </div>
-            <p className="text-xs text-gray-400 mt-1.5 text-center">
-              {isHe ? "מופעל על ידי Claude AI" : "Powered by Claude AI"}
-            </p>
-          </div>
+          <form onSubmit={handleSend} className="p-3 border-t border-gray-200 bg-white flex gap-2" dir="rtl">
+            <input
+              type="text"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder="שאל שאלה על השקעות נדל&quot;ן..."
+              className="flex-1 px-3 py-2 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-primary-500 outline-none"
+              disabled={thinking}
+            />
+            <button type="submit" disabled={!input.trim() || thinking}
+              className="bg-primary-600 text-white px-3 py-2 rounded-xl hover:bg-primary-700 transition-colors disabled:opacity-50">
+              <svg className="w-4 h-4 rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+              </svg>
+            </button>
+          </form>
         </div>
       )}
-    </>
+
+      {/* Bubble button */}
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="w-14 h-14 bg-gradient-to-br from-primary-700 to-primary-500 rounded-full shadow-lg hover:shadow-xl transition-all hover:scale-105 flex items-center justify-center text-white"
+        title="יועץ AI"
+      >
+        {open ? (
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        ) : (
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+          </svg>
+        )}
+      </button>
+    </div>
   );
 }

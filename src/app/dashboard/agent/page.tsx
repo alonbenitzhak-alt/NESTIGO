@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/AuthContext";
 import { useLanguage } from "@/lib/LanguageContext";
 import { supabase } from "@/lib/supabase";
@@ -32,110 +33,280 @@ const statusLabels: Record<string, Record<LeadStatus, string>> = {
   en: { sent: "Sent", in_progress: "In Progress", answered: "Answered", closed: "Closed" },
 };
 
+const AMENITIES_LIST = ["חניה", "מרפסת", "בריכה", "מעלית", "מחסן", "מאובזר", "נוף לים", "גינה", "מכון כושר", "שומר"];
+const PROPERTY_TYPES = ["Apartment", "Land", "Detached House", "Villa", "Maisonette", "Apartment Complex"];
+const CURRENCIES = ["EUR", "USD", "GBP", "ILS"] as const;
+
 /* ─────── Property Form ─────── */
 function AgentPropertyForm({
   property,
   onSave,
   onCancel,
+  agentId,
 }: {
   property?: Property;
   onSave: (data: Omit<Property, "id"> & { id?: string }) => void;
   onCancel: () => void;
+  agentId: string;
 }) {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const [form, setForm] = useState({
     title: property?.title || "",
     country: property?.country || "Greece",
     city: property?.city || "",
+    neighborhood: property?.neighborhood || "",
     price: property?.price || 0,
+    currency: (property?.currency || "EUR") as typeof CURRENCIES[number],
+    show_roi: property?.show_roi ?? true,
     expected_roi: property?.expected_roi || 0,
     bedrooms: property?.bedrooms || 1,
+    bathrooms: property?.bathrooms || 1,
+    area_sqm: property?.area_sqm || 0,
+    floor: property?.floor ?? ("" as string | number),
+    year_built: property?.year_built ?? ("" as string | number),
     property_type: property?.property_type || "Apartment",
     description: property?.description || "",
-    images: property?.images?.join("\n") || "",
-    featured: property?.featured || false,
+    amenities: property?.amenities || [] as string[],
+    furnished: property?.furnished || false,
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // Image upload state
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
+  const [existingImages, setExistingImages] = useState<string[]>(property?.images || []);
+  const [primaryIdx, setPrimaryIdx] = useState(0);
+  const [uploading, setUploading] = useState(false);
+
+  const toggleAmenity = (a: string) => {
+    setForm((prev) => ({
+      ...prev,
+      amenities: prev.amenities.includes(a)
+        ? prev.amenities.filter((x) => x !== a)
+        : [...prev.amenities, a],
+    }));
+  };
+
+  const handleFileAdd = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    setImageFiles((prev) => [...prev, ...files]);
+    e.target.value = "";
+  };
+
+  const removeNewFile = (idx: number) => {
+    setImageFiles((prev) => prev.filter((_, i) => i !== idx));
+  };
+
+  const removeExisting = (idx: number) => {
+    setExistingImages((prev) => prev.filter((_, i) => i !== idx));
+    if (primaryIdx >= existingImages.length - 1) setPrimaryIdx(0);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setUploading(true);
+
+    // Upload new files to Supabase Storage
+    const uploadedUrls: string[] = [];
+    for (const file of imageFiles) {
+      const ext = file.name.split(".").pop();
+      const path = `${agentId}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+      const { data, error } = await supabase.storage.from("property-images").upload(path, file, { upsert: false });
+      if (data && !error) {
+        const { data: urlData } = supabase.storage.from("property-images").getPublicUrl(path);
+        uploadedUrls.push(urlData.publicUrl);
+      }
+    }
+
+    // Merge: existing first, then new, then reorder so primary is first
+    const allImages = [...existingImages, ...uploadedUrls];
+    const reordered = allImages.length > 0
+      ? [allImages[primaryIdx], ...allImages.filter((_, i) => i !== primaryIdx)]
+      : [];
+
+    setUploading(false);
     onSave({
       ...(property?.id ? { id: property.id } : {}),
       title: form.title,
       country: form.country,
       city: form.city,
+      neighborhood: form.neighborhood || undefined,
       price: form.price,
-      expected_roi: form.expected_roi,
+      currency: form.currency,
+      show_roi: form.show_roi,
+      expected_roi: form.show_roi ? form.expected_roi : 0,
       bedrooms: form.bedrooms,
+      bathrooms: form.bathrooms,
+      area_sqm: form.area_sqm || undefined,
+      floor: form.floor !== "" ? Number(form.floor) : null,
+      year_built: form.year_built !== "" ? Number(form.year_built) : null,
       property_type: form.property_type,
       description: form.description,
-      images: form.images.split("\n").filter(Boolean),
-      featured: form.featured,
+      images: reordered,
+      amenities: form.amenities,
+      furnished: form.furnished,
       agent_name: "",
       agent_email: "",
     });
   };
 
+  const inputCls = "w-full px-4 py-2.5 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-primary-500 outline-none";
+  const selectCls = inputCls + " bg-white";
+  const allImagesPreview = [...existingImages, ...imageFiles.map((f) => URL.createObjectURL(f))];
+
   return (
-    <form onSubmit={handleSubmit} className="bg-white rounded-2xl border border-gray-200 p-6 space-y-4">
+    <form onSubmit={handleSubmit} className="bg-white rounded-2xl border border-gray-200 p-6 space-y-5">
       <h3 className="text-lg font-bold text-gray-900">
         {property ? t("dashboard.agent.editProperty") : t("dashboard.agent.addProperty")}
       </h3>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">{t("dashboard.agent.propTitle")}</label>
-          <input type="text" required value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} className="w-full px-4 py-2.5 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-primary-500 outline-none" />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">{t("dashboard.agent.country")}</label>
-          <select value={form.country} onChange={(e) => setForm({ ...form, country: e.target.value })} className="w-full px-4 py-2.5 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-primary-500 outline-none bg-white">
-            <option value="Greece">Greece</option>
-            <option value="Cyprus">Cyprus</option>
-            <option value="Georgia">Georgia</option>
-            <option value="Portugal">Portugal</option>
-          </select>
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">{t("dashboard.agent.city")}</label>
-          <input type="text" required value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} className="w-full px-4 py-2.5 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-primary-500 outline-none" />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">{t("dashboard.agent.price")}</label>
-          <input type="number" required min={0} value={form.price} onChange={(e) => setForm({ ...form, price: parseInt(e.target.value) || 0 })} className="w-full px-4 py-2.5 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-primary-500 outline-none" />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">{t("dashboard.agent.roi")}</label>
-          <input type="number" required min={0} step={0.1} value={form.expected_roi} onChange={(e) => setForm({ ...form, expected_roi: parseFloat(e.target.value) || 0 })} className="w-full px-4 py-2.5 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-primary-500 outline-none" />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">{t("dashboard.agent.bedrooms")}</label>
-          <input type="number" required min={1} value={form.bedrooms} onChange={(e) => setForm({ ...form, bedrooms: parseInt(e.target.value) || 1 })} className="w-full px-4 py-2.5 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-primary-500 outline-none" />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">{t("dashboard.agent.propType")}</label>
-          <select value={form.property_type} onChange={(e) => setForm({ ...form, property_type: e.target.value })} className="w-full px-4 py-2.5 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-primary-500 outline-none bg-white">
-            <option value="Apartment">Apartment</option>
-            <option value="Villa">Villa</option>
-            <option value="Studio">Studio</option>
-            <option value="Condo">Condo</option>
-            <option value="Penthouse">Penthouse</option>
-          </select>
-        </div>
-        <div className="flex items-center gap-2 pt-6">
-          <input type="checkbox" checked={form.featured} onChange={(e) => setForm({ ...form, featured: e.target.checked })} className="w-4 h-4 text-primary-600 rounded" />
-          <label className="text-sm font-medium text-gray-700">{t("dashboard.agent.featured")}</label>
+
+      {/* Section: Basic Info */}
+      <div>
+        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">{lang === "he" ? "פרטים בסיסיים" : "Basic Details"}</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="md:col-span-2">
+            <label className="block text-sm font-medium text-gray-700 mb-1">{t("dashboard.agent.propTitle")}</label>
+            <input type="text" required value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} className={inputCls} />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">{t("dashboard.agent.country")}</label>
+            <select value={form.country} onChange={(e) => setForm({ ...form, country: e.target.value })} className={selectCls}>
+              <option value="Greece">Greece</option>
+              <option value="Cyprus">Cyprus</option>
+              <option value="Georgia">Georgia</option>
+              <option value="Portugal">Portugal</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">{t("dashboard.agent.city")}</label>
+            <input type="text" required value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} className={inputCls} />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">{lang === "he" ? "שכונה" : "Neighborhood"}</label>
+            <input type="text" value={form.neighborhood} onChange={(e) => setForm({ ...form, neighborhood: e.target.value })} className={inputCls} />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">{t("dashboard.agent.propType")}</label>
+            <select value={form.property_type} onChange={(e) => setForm({ ...form, property_type: e.target.value })} className={selectCls}>
+              {PROPERTY_TYPES.map((pt) => <option key={pt} value={pt}>{pt}</option>)}
+            </select>
+          </div>
         </div>
       </div>
+
+      {/* Section: Financial */}
+      <div>
+        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">{lang === "he" ? "מחיר ותשואה" : "Price & Returns"}</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">{t("dashboard.agent.price")}</label>
+            <div className="flex gap-2">
+              <select value={form.currency} onChange={(e) => setForm({ ...form, currency: e.target.value as typeof CURRENCIES[number] })} className="px-3 py-2.5 border border-gray-300 rounded-xl text-sm bg-white focus:ring-2 focus:ring-primary-500 outline-none">
+                {CURRENCIES.map((c) => <option key={c} value={c}>{c}</option>)}
+              </select>
+              <input type="number" required min={0} value={form.price} onChange={(e) => setForm({ ...form, price: parseInt(e.target.value) || 0 })} className={inputCls} />
+            </div>
+          </div>
+          <div>
+            <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-1 cursor-pointer">
+              <input type="checkbox" checked={form.show_roi} onChange={(e) => setForm({ ...form, show_roi: e.target.checked })} className="w-4 h-4 text-primary-600 rounded" />
+              {lang === "he" ? "הוסף תשואה צפויה (%)" : "Add Expected ROI (%)"}
+            </label>
+            {form.show_roi && (
+              <input type="number" min={0} step={0.1} value={form.expected_roi} onChange={(e) => setForm({ ...form, expected_roi: parseFloat(e.target.value) || 0 })} className={inputCls} />
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Section: Property specs */}
+      <div>
+        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">{lang === "he" ? "מפרט הנכס" : "Property Specs"}</p>
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">{t("dashboard.agent.bedrooms")}</label>
+            <input type="number" required min={0} value={form.bedrooms} onChange={(e) => setForm({ ...form, bedrooms: parseInt(e.target.value) || 0 })} className={inputCls} />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">{lang === "he" ? "חדרי שירות" : "Bathrooms"}</label>
+            <input type="number" required min={0} value={form.bathrooms} onChange={(e) => setForm({ ...form, bathrooms: parseInt(e.target.value) || 0 })} className={inputCls} />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">{lang === "he" ? "שטח (מ״ר)" : "Area (sqm)"}</label>
+            <input type="number" min={0} value={form.area_sqm} onChange={(e) => setForm({ ...form, area_sqm: parseInt(e.target.value) || 0 })} className={inputCls} />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">{lang === "he" ? "קומה" : "Floor"}</label>
+            <input type="number" min={0} value={form.floor} onChange={(e) => setForm({ ...form, floor: e.target.value })} className={inputCls} placeholder="—" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">{lang === "he" ? "שנת בנייה" : "Year Built"}</label>
+            <input type="number" min={1900} max={2030} value={form.year_built} onChange={(e) => setForm({ ...form, year_built: e.target.value })} className={inputCls} placeholder="2020" />
+          </div>
+        </div>
+        <div className="mt-4">
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" checked={form.furnished} onChange={(e) => setForm({ ...form, furnished: e.target.checked })} className="w-4 h-4 text-primary-600 rounded" />
+            <span className="text-sm font-medium text-gray-700">{lang === "he" ? "מרוהט" : "Furnished"}</span>
+          </label>
+        </div>
+      </div>
+
+      {/* Section: Amenities */}
+      <div>
+        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">{lang === "he" ? "מתקנים ואביזרים" : "Amenities"}</p>
+        <div className="flex flex-wrap gap-2">
+          {AMENITIES_LIST.map((a) => (
+            <button key={a} type="button" onClick={() => toggleAmenity(a)}
+              className={`px-3 py-1.5 rounded-full text-sm font-medium border transition-colors ${
+                form.amenities.includes(a) ? "bg-primary-600 text-white border-primary-600" : "bg-white text-gray-600 border-gray-300 hover:border-primary-400"
+              }`}>
+              {a}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Section: Description */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">{t("dashboard.agent.description")}</label>
-        <textarea rows={3} required value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} className="w-full px-4 py-2.5 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-primary-500 outline-none resize-none" />
+        <textarea rows={4} required value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} className={inputCls + " resize-none"} />
       </div>
+
+      {/* Section: Images Upload */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">{t("dashboard.agent.images")}</label>
-        <textarea rows={3} value={form.images} onChange={(e) => setForm({ ...form, images: e.target.value })} className="w-full px-4 py-2.5 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-primary-500 outline-none resize-none" placeholder="https://images.unsplash.com/..." />
+        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">{lang === "he" ? "תמונות הנכס" : "Property Images"}</p>
+        <p className="text-xs text-gray-400 mb-3">{lang === "he" ? "לחץ על תמונה כדי להגדיר אותה כראשית (כוכב = ראשית)" : "Click an image to set it as primary (★ = primary)"}</p>
+
+        {/* Image previews */}
+        {allImagesPreview.length > 0 && (
+          <div className="flex flex-wrap gap-3 mb-4">
+            {allImagesPreview.map((src, idx) => (
+              <div key={idx} className="relative group">
+                <img src={src} alt="" className={`w-24 h-24 object-cover rounded-xl border-2 cursor-pointer transition-all ${primaryIdx === idx ? "border-primary-500 ring-2 ring-primary-300" : "border-gray-200 hover:border-primary-300"}`}
+                  onClick={() => setPrimaryIdx(idx)} />
+                {primaryIdx === idx && (
+                  <span className="absolute top-1 left-1 text-xs bg-primary-600 text-white px-1.5 py-0.5 rounded-full">★</span>
+                )}
+                <button type="button"
+                  onClick={() => idx < existingImages.length ? removeExisting(idx) : removeNewFile(idx - existingImages.length)}
+                  className="absolute top-1 right-1 w-5 h-5 bg-red-500 text-white rounded-full text-xs items-center justify-center hidden group-hover:flex">×</button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <label className="inline-flex items-center gap-2 cursor-pointer bg-gray-50 border border-dashed border-gray-300 hover:border-primary-400 rounded-xl px-4 py-3 text-sm text-gray-600 hover:text-primary-600 transition-colors">
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+          </svg>
+          {lang === "he" ? "הוסף תמונה" : "Add Image"}
+          <input type="file" accept="image/*" multiple onChange={handleFileAdd} className="hidden" />
+        </label>
+        <p className="text-xs text-gray-400 mt-1">{lang === "he" ? "JPG, PNG, WEBP — ניתן לבחור מספר קבצים" : "JPG, PNG, WEBP — multiple files allowed"}</p>
       </div>
-      <div className="flex gap-3">
-        <button type="submit" className="bg-primary-600 text-white px-6 py-2.5 rounded-xl font-semibold text-sm hover:bg-primary-700 transition-colors">
-          {property ? t("dashboard.agent.updateProperty") : t("dashboard.agent.addProperty")}
+
+      <div className="flex gap-3 pt-2">
+        <button type="submit" disabled={uploading} className="bg-primary-600 text-white px-6 py-2.5 rounded-xl font-semibold text-sm hover:bg-primary-700 transition-colors disabled:opacity-50">
+          {uploading ? (lang === "he" ? "מעלה תמונות..." : "Uploading...") : property ? t("dashboard.agent.updateProperty") : t("dashboard.agent.addProperty")}
         </button>
         <button type="button" onClick={onCancel} className="border border-gray-300 text-gray-700 px-6 py-2.5 rounded-xl font-semibold text-sm hover:bg-gray-50 transition-colors">
           {t("admin.cancel")}
@@ -145,10 +316,60 @@ function AgentPropertyForm({
   );
 }
 
+/* ─────── Pending Approval Screen ─────── */
+function PendingApprovalScreen({
+  userId, refreshProfile, lang,
+}: { userId: string; refreshProfile: () => Promise<void>; lang: string }) {
+  useEffect(() => {
+    const channel = supabase
+      .channel(`profile-approved-${userId}`)
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "profiles", filter: `id=eq.${userId}` },
+        async (payload) => {
+          if (payload.new?.approved === true) {
+            await refreshProfile();
+          }
+        }
+      )
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [userId, refreshProfile]);
+
+  return (
+    <div className="max-w-2xl mx-auto px-4 py-20 text-center">
+      <div className="bg-amber-50 border border-amber-200 rounded-2xl p-10">
+        <div className="w-20 h-20 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-6">
+          <svg className="w-10 h-10 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+        <h1 className="text-2xl font-bold text-amber-800 mb-3">
+          {lang === "he" ? "הבקשה שלכם בבדיקה" : "Your Application is Under Review"}
+        </h1>
+        <p className="text-amber-700 leading-relaxed mb-6">
+          {lang === "he"
+            ? "תודה על ההרשמה! צוות MANAIO בודק את רישיון התיווך שלכם ואת הסכם השותפות. תקבלו הודעה במייל לאחר אישור החשבון (בדרך כלל תוך 1-2 ימי עסקים)."
+            : "Thank you for registering! The MANAIO team is reviewing your broker license and partnership agreement. You will receive an email once your account is approved (usually within 1-2 business days)."}
+        </p>
+        <div className="flex items-center justify-center gap-2 text-xs text-amber-500 mb-6">
+          <span className="w-2 h-2 bg-amber-400 rounded-full animate-pulse" />
+          {lang === "he" ? "ממתין לאישור — הדף יתעדכן אוטומטית" : "Waiting for approval — page will update automatically"}
+        </div>
+        <div className="text-sm text-amber-600 bg-amber-100 rounded-xl px-4 py-3 inline-block">
+          {lang === "he" ? "שאלות? " : "Questions? "}
+          <a href="mailto:agents@mymanaio.com" className="font-semibold underline">agents@mymanaio.com</a>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ─────── Main Agent Dashboard ─────── */
 export default function AgentDashboard() {
-  const { user, profile, loading, isAgent, updateProfile } = useAuth();
+  const { user, profile, loading, isAgent, updateProfile, refreshProfile } = useAuth();
   const { t, lang } = useLanguage();
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<Tab>("properties");
   const [properties, setProperties] = useState<Property[]>([]);
   const [leads, setLeads] = useState<Lead[]>([]);
@@ -293,31 +514,9 @@ export default function AgentDashboard() {
     );
   }
 
-  // Agent is registered but not yet approved by admin
+  // Agent is registered but not yet approved by admin — with realtime approval detection
   if (profile?.approved === false || profile?.approved === null) {
-    return (
-      <div className="max-w-2xl mx-auto px-4 py-20 text-center">
-        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-10">
-          <div className="w-20 h-20 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-6">
-            <svg className="w-10 h-10 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-          </div>
-          <h1 className="text-2xl font-bold text-amber-800 mb-3">
-            {lang === "he" ? "הבקשה שלכם בבדיקה" : "Your Application is Under Review"}
-          </h1>
-          <p className="text-amber-700 leading-relaxed mb-6">
-            {lang === "he"
-              ? "תודה על ההרשמה! צוות MANAIO בודק את רישיון התיווך שלכם ואת הסכם השותפות. תקבלו הודעה במייל לאחר אישור החשבון (בדרך כלל תוך 1-2 ימי עסקים)."
-              : "Thank you for registering! The MANAIO team is reviewing your broker license and partnership agreement. You will receive an email once your account is approved (usually within 1-2 business days)."}
-          </p>
-          <div className="text-sm text-amber-600 bg-amber-100 rounded-xl px-4 py-3 inline-block">
-            {lang === "he" ? "שאלות? " : "Questions? "}
-            <a href="mailto:agents@mymanaio.com" className="font-semibold underline">agents@mymanaio.com</a>
-          </div>
-        </div>
-      </div>
-    );
+    return <PendingApprovalScreen userId={user!.id} refreshProfile={refreshProfile} lang={lang} />;
   }
 
   // Stats
@@ -333,9 +532,14 @@ export default function AgentDashboard() {
         .from("properties")
         .update({
           title: data.title, country: data.country, city: data.city,
-          price: data.price, expected_roi: data.expected_roi, bedrooms: data.bedrooms,
+          neighborhood: data.neighborhood,
+          price: data.price, currency: data.currency, show_roi: data.show_roi,
+          expected_roi: data.expected_roi,
+          bedrooms: data.bedrooms, bathrooms: data.bathrooms,
+          area_sqm: data.area_sqm, floor: data.floor, year_built: data.year_built,
           property_type: data.property_type, description: data.description,
-          images: data.images, featured: data.featured,
+          images: data.images, amenities: data.amenities,
+          furnished: data.furnished,
         })
         .eq("id", data.id);
       setProperties(prev => prev.map(p => p.id === data.id ? { ...p, ...data } as Property : p));
@@ -345,9 +549,14 @@ export default function AgentDashboard() {
         .from("properties")
         .insert({
           title: data.title, country: data.country, city: data.city,
-          price: data.price, expected_roi: data.expected_roi, bedrooms: data.bedrooms,
+          neighborhood: data.neighborhood,
+          price: data.price, currency: data.currency, show_roi: data.show_roi,
+          expected_roi: data.expected_roi,
+          bedrooms: data.bedrooms, bathrooms: data.bathrooms,
+          area_sqm: data.area_sqm, floor: data.floor, year_built: data.year_built,
           property_type: data.property_type, description: data.description,
-          images: data.images, featured: data.featured,
+          images: data.images, amenities: data.amenities,
+          furnished: data.furnished,
           agent_id: user.id,
           agent_name: profile?.full_name || user.email || "",
           agent_email: user.email || "",
@@ -497,6 +706,7 @@ export default function AgentDashboard() {
                   property={editing || undefined}
                   onSave={handleSaveProperty}
                   onCancel={() => { setEditing(null); setShowForm(false); }}
+                  agentId={user.id}
                 />
               </div>
             ) : (

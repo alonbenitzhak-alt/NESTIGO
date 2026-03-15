@@ -24,12 +24,21 @@ export interface Property {
   title: string;
   country: string;
   city: string;
+  neighborhood?: string;
   price: number;
   expected_roi: number;
   bedrooms: number;
+  bathrooms?: number;
+  area_sqm?: number;
+  floor?: number | null;
+  year_built?: number | null;
   property_type: string;
   description: string;
   images: string[];
+  amenities?: string[];
+  furnished?: boolean;
+  currency?: "EUR" | "USD" | "GBP" | "ILS";
+  show_roi?: boolean;
   agent_name: string;
   agent_email: string;
   agent_id?: string;
@@ -38,6 +47,22 @@ export interface Property {
   clicks_count?: number;
   status?: "active" | "closed";
   created_at?: string;
+}
+
+export type PaymentStatus = "pending" | "paid";
+export type PaymentType = "lead_fee" | "commission" | "bonus";
+
+export interface Payment {
+  id: string;
+  agent_id: string;
+  lead_id?: string | null;
+  property_id?: string | null;
+  amount: number;
+  type: PaymentType;
+  status: PaymentStatus;
+  notes?: string | null;
+  paid_at?: string | null;
+  created_at: string;
 }
 
 export type LeadStatus = "sent" | "in_progress" | "answered" | "closed";
