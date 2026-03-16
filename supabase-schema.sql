@@ -43,6 +43,8 @@ CREATE TRIGGER on_auth_user_created
 CREATE TABLE IF NOT EXISTS properties (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   title TEXT NOT NULL,
+  title_he TEXT,
+  description_he TEXT,
   country TEXT NOT NULL,
   city TEXT NOT NULL,
   price INTEGER NOT NULL,

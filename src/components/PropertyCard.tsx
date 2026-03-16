@@ -7,8 +7,9 @@ import { useLanguage } from "@/lib/LanguageContext";
 
 export default function PropertyCard({ property }: { property: Property }) {
   const { isFavorite, toggleFavorite } = useFavorites();
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const favorited = isFavorite(property.id);
+  const displayTitle = lang === "he" ? (property.title_he || property.title) : property.title;
 
   return (
     <div className="bg-white rounded-3xl overflow-hidden shadow-md hover:shadow-2xl transition-all duration-400 border border-gray-100 group hover:-translate-y-1">
@@ -16,7 +17,7 @@ export default function PropertyCard({ property }: { property: Property }) {
       <div className="relative h-52 overflow-hidden">
         <img
           src={property.images[0]}
-          alt={property.title}
+          alt={displayTitle}
           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
         />
         {/* Gradient overlay */}
@@ -68,7 +69,7 @@ export default function PropertyCard({ property }: { property: Property }) {
       {/* Content */}
       <div className="p-5">
         <h3 className="font-bold text-gray-900 text-lg leading-snug mb-3 line-clamp-2 group-hover:text-primary-700 transition-colors">
-          {property.title}
+          {displayTitle}
         </h3>
 
         {/* Stats row */}

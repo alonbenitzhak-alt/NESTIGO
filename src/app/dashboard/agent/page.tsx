@@ -129,10 +129,30 @@ function AgentPropertyForm({
       ? [allImages[primaryIdx], ...allImages.filter((_, i) => i !== primaryIdx)]
       : [];
 
+    // Auto-translate title and description to Hebrew
+    let title_he: string | undefined;
+    let description_he: string | undefined;
+    try {
+      const res = await fetch("/api/translate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title: form.title, description: form.description }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        title_he = data.title_he;
+        description_he = data.description_he;
+      }
+    } catch {
+      // Translation failure is non-blocking — property saves without Hebrew
+    }
+
     setUploading(false);
     onSave({
       ...(property?.id ? { id: property.id } : {}),
       title: form.title,
+      title_he,
+      description_he,
       country: form.country,
       city: form.city,
       neighborhood: form.neighborhood || undefined,
@@ -537,13 +557,15 @@ export default function AgentDashboard() {
       await supabase
         .from("properties")
         .update({
-          title: data.title, country: data.country, city: data.city,
+          title: data.title, title_he: data.title_he,
+          description: data.description, description_he: data.description_he,
+          country: data.country, city: data.city,
           neighborhood: data.neighborhood,
           price: data.price, currency: data.currency, show_roi: data.show_roi,
           expected_roi: data.expected_roi,
           bedrooms: data.bedrooms, bathrooms: data.bathrooms,
           area_sqm: data.area_sqm, floor: data.floor, year_built: data.year_built,
-          property_type: data.property_type, description: data.description,
+          property_type: data.property_type,
           images: data.images, amenities: data.amenities,
           furnished: data.furnished,
         })
@@ -554,13 +576,15 @@ export default function AgentDashboard() {
       const { data: newProp } = await supabase
         .from("properties")
         .insert({
-          title: data.title, country: data.country, city: data.city,
+          title: data.title, title_he: data.title_he,
+          description: data.description, description_he: data.description_he,
+          country: data.country, city: data.city,
           neighborhood: data.neighborhood,
           price: data.price, currency: data.currency, show_roi: data.show_roi,
           expected_roi: data.expected_roi,
           bedrooms: data.bedrooms, bathrooms: data.bathrooms,
           area_sqm: data.area_sqm, floor: data.floor, year_built: data.year_built,
-          property_type: data.property_type, description: data.description,
+          property_type: data.property_type,
           images: data.images, amenities: data.amenities,
           furnished: data.furnished,
           agent_id: user.id,
