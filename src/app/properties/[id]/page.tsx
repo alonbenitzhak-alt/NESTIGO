@@ -23,8 +23,6 @@ export default function PropertyDetailsPage({
   const property = properties.find((p) => p.id === id);
   const [selectedImage, setSelectedImage] = useState(0);
   const { t, lang } = useLanguage();
-  const displayTitle = lang === "he" ? (property?.title_he || property?.title) : property?.title;
-  const displayDescription = lang === "he" ? (property?.description_he || property?.description) : property?.description;
   const { user } = useAuth();
   const [chatOpen, setChatOpen] = useState(false);
   const [conversationId, setConversationId] = useState<string | null>(null);
@@ -57,6 +55,9 @@ export default function PropertyDetailsPage({
   if (!property) {
     notFound();
   }
+
+  const displayTitle = property.translations?.[lang]?.title ?? (lang === "he" ? property.title_he : undefined) ?? property.title;
+  const displayDescription = property.translations?.[lang]?.description ?? (lang === "he" ? property.description_he : undefined) ?? property.description;
 
   return (
     <>
@@ -229,7 +230,7 @@ export default function PropertyDetailsPage({
               )}
 
               <div className="h-64 rounded-2xl overflow-hidden mb-4">
-                <PropertyMap city={property.city} country={property.country} title={property.title} />
+                <PropertyMap city={property.city} country={property.country} title={displayTitle} />
               </div>
             </div>
           </div>

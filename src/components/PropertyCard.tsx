@@ -9,7 +9,7 @@ export default function PropertyCard({ property }: { property: Property }) {
   const { isFavorite, toggleFavorite } = useFavorites();
   const { t, lang } = useLanguage();
   const favorited = isFavorite(property.id);
-  const displayTitle = lang === "he" ? (property.title_he || property.title) : property.title;
+  const displayTitle = property.translations?.[lang]?.title ?? (lang === "he" ? property.title_he : undefined) ?? property.title;
 
   return (
     <div className="bg-white rounded-3xl overflow-hidden shadow-md hover:shadow-2xl transition-all duration-400 border border-gray-100 group hover:-translate-y-1">

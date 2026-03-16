@@ -24,6 +24,12 @@ export interface Property {
   title: string;
   title_he?: string;
   description_he?: string;
+  translations?: {
+    [lang: string]: {
+      title: string;
+      description: string;
+    };
+  };
   country: string;
   city: string;
   neighborhood?: string;
