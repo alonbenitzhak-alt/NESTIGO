@@ -39,6 +39,7 @@ function PropertyForm({
       images: property?.images || [],
       agent_name: property?.agent_name || "",
       agent_email: property?.agent_email || "",
+      agent_whatsapp: property?.agent_whatsapp || "",
       status: property?.status || "active",
       featured: property?.featured || false,
     }
@@ -138,6 +139,10 @@ function PropertyForm({
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">{t("admin.form.agentEmail")}</label>
           <input type="email" required value={form.agent_email} onChange={(e) => setForm({ ...form, agent_email: e.target.value })} className={inp} />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">וואטסאפ מתווך <span className="text-gray-400 font-normal text-xs">(אופציונלי, כולל קידומת מדינה, לדוג׳ +972501234567)</span></label>
+          <input type="tel" placeholder="+972501234567" value={form.agent_whatsapp || ""} onChange={(e) => setForm({ ...form, agent_whatsapp: e.target.value })} className={inp} />
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">{t("admin.form.status")}</label>

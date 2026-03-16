@@ -49,6 +49,7 @@ export interface Property {
   show_roi?: boolean;
   agent_name: string;
   agent_email: string;
+  agent_whatsapp?: string;
   agent_id?: string;
   featured?: boolean;
   views_count?: number;

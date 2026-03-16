@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import PropertyCard from "@/components/PropertyCard";
 import { useProperties } from "@/lib/PropertiesContext";
@@ -14,6 +14,19 @@ export default function HomePage() {
   const { properties } = useProperties();
   const [search, setSearch] = useState({ country: "", city: "", budget: "", propertyType: "", minBedrooms: "", minRoi: "" });
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const [heroIdx, setHeroIdx] = useState(0);
+
+  const heroImages = [
+    "https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?w=1920&q=80",
+    "https://images.unsplash.com/photo-1533104816931-20fa691ff6ca?w=1920&q=80",
+    "https://images.unsplash.com/photo-1555993539-1732b0258235?w=1920&q=80",
+    "https://images.unsplash.com/photo-1516483638261-f4dbaf036963?w=1920&q=80",
+  ];
+
+  useEffect(() => {
+    const timer = setInterval(() => setHeroIdx((i) => (i + 1) % heroImages.length), 5000);
+    return () => clearInterval(timer);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const featured = properties.slice(0, 6);
 
   const handleSearch = (e: React.FormEvent) => {
@@ -121,22 +134,37 @@ export default function HomePage() {
   return (
     <>
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-primary-950 via-primary-900 to-primary-800 text-white overflow-hidden">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-primary-600 rounded-full opacity-10 blur-3xl -translate-y-1/2 translate-x-1/3" />
-        <div className="absolute bottom-0 left-0 w-64 h-64 bg-blue-400 rounded-full opacity-10 blur-3xl translate-y-1/2 -translate-x-1/4" />
+      <section className="relative text-white overflow-hidden">
+        {/* Rotating background images */}
+        {heroImages.map((src, i) => (
+          <div
+            key={src}
+            className="absolute inset-0 bg-cover bg-center transition-opacity duration-1000"
+            style={{ backgroundImage: `url('${src}')`, opacity: i === heroIdx ? 1 : 0 }}
+          />
+        ))}
+        {/* Dark overlay */}
+        <div className="absolute inset-0 bg-black/55" />
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 md:py-36 relative">
           <div className="max-w-3xl">
-            <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 rounded-full px-4 py-1.5 text-sm text-primary-100 mb-6">
-              <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
-              {t("home.hero.badge")}
-            </div>
-            <h1 className="text-4xl md:text-5xl font-bold leading-tight mb-5" style={{ fontFamily: "'Fraunces', 'Playfair Display', Georgia, serif" }}>
-              {t("home.hero.title")}
+            <h1 className="text-4xl md:text-6xl font-bold leading-tight mb-5 drop-shadow-lg" style={{ fontFamily: "'Fraunces', 'Playfair Display', Georgia, serif" }}>
+              שוק הנדל&quot;ן הבינלאומי לישראלים
             </h1>
-            <p className="text-lg text-primary-200 mb-10 leading-relaxed max-w-2xl">
+            <p className="text-lg text-white/80 mb-10 leading-relaxed max-w-2xl">
               {t("home.hero.subtitle")}
             </p>
+          </div>
+
+          {/* Dot indicators */}
+          <div className="flex gap-2 mb-8">
+            {heroImages.map((_, i) => (
+              <button
+                key={i}
+                onClick={() => setHeroIdx(i)}
+                className={`w-2 h-2 rounded-full transition-all ${i === heroIdx ? "bg-white w-6" : "bg-white/40"}`}
+              />
+            ))}
           </div>
 
           {/* Search Bar */}
