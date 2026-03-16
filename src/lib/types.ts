@@ -22,6 +22,8 @@ export interface Profile {
 export interface Property {
   id: string;
   title: string;
+  title_he?: string;
+  description_he?: string;
   country: string;
   city: string;
   neighborhood?: string;
